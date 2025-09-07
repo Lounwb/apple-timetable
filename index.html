@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>课表转ICS工具</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#007AFF',
+                        secondary: '#5856D6',
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <div class="container mx-auto px-4 py-8 max-w-4xl">
+        <!-- 页面标题 -->
+        <div class="text-center mb-8">
+            <h1 class="text-3xl font-bold text-gray-900 mb-2">课表转ICS工具</h1>
+            <p class="text-gray-600">将你的课表转换为ICS格式，轻松导入到苹果日历中</p>
+        </div>
+
+        <!-- 主要内容区域 -->
+        <div class="space-y-8">
+            <!-- 学期基本信息 -->
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h2 class="text-xl font-semibold text-gray-900 mb-4">学期基本信息</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">学校地址</label>
+                        <input type="text" id="schoolAddress" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary" placeholder="例如：电子科技大学清水河校区">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">学期第一天</label>
+                        <input type="date" id="semesterStartDate" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">学期总周数</label>
+                        <input type="number" id="totalWeeks" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary" placeholder="例如：16" min="1" max="30">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">每节课时长（分钟）</label>
+                        <input type="number" id="classDuration" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary" placeholder="45" min="30" max="120" value="45">
+                    </div>
+                </div>
+            </div>
+
+            <!-- 课程时间配置 -->
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h2 class="text-xl font-semibold text-gray-900 mb-4">课程时间配置</h2>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">一天有几节课</label>
+                    <input type="number" id="classesPerDay" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary" placeholder="11" min="1" max="20" value="11">
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">大节间休息时间（分钟）</label>
+                    <input type="number" id="breakDuration" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary" placeholder="15" min="0" max="60" value="15">
+                </div>
+                <div>
+                    <h3 class="text-lg font-medium text-gray-900 mb-3">每节课开始时间</h3>
+                    <div id="classTimes" class="space-y-2">
+                        <!-- 动态生成的课程时间输入框 -->
+                    </div>
+                    <button type="button" id="addClassTime" class="mt-3 px-4 py-2 bg-primary text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-primary">
+                        添加课程时间
+                    </button>
+                </div>
+            </div>
+
+            <!-- 提醒设置 -->
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h2 class="text-xl font-semibold text-gray-900 mb-4">提醒设置</h2>
+                <div class="space-y-3">
+                    <div class="flex items-center">
+                        <input type="checkbox" id="reminder1" class="mr-3" checked>
+                        <label class="text-sm text-gray-700">课前1小时提醒</label>
+                    </div>
+                    <div class="flex items-center">
+                        <input type="checkbox" id="reminder2" class="mr-3" checked>
+                        <label class="text-sm text-gray-700">课前30分钟提醒</label>
+                    </div>
+                    <div class="flex items-center">
+                        <input type="checkbox" id="reminder3" class="mr-3" checked>
+                        <label class="text-sm text-gray-700">课前15分钟提醒</label>
+                    </div>
+                    <div class="flex items-center">
+                        <input type="checkbox" id="reminder4" class="mr-3" checked>
+                        <label class="text-sm text-gray-700">课前5分钟提醒</label>
+                    </div>
+                    <div class="flex items-center">
+                        <input type="checkbox" id="reminder5" class="mr-3">
+                        <label class="text-sm text-gray-700">课前1分钟提醒</label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 课程信息 -->
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h2 class="text-xl font-semibold text-gray-900 mb-4">课程信息</h2>
+                <div id="coursesList" class="space-y-6">
+                    <!-- 动态生成的课程输入表单 -->
+                </div>
+                <button type="button" id="addCourse" class="mt-4 px-4 py-2 bg-secondary text-white rounded-md hover:bg-purple-600 focus:outline-none focus:ring-2 focus:ring-secondary">
+                    添加课程
+                </button>
+            </div>
+
+            <!-- 生成和下载按钮 -->
+            <div class="text-center">
+                <button type="button" id="generateICS" class="px-8 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 text-lg font-medium">
+                    生成ICS文件
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
