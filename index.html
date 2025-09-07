@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>课表转ICS工具</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -119,6 +121,53 @@
             </div>
         </div>
     </div>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-8 mt-16">
+        <div class="container mx-auto px-4 max-w-4xl">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <!-- 关于工具 -->
+                <div>
+                    <h3 class="text-lg font-semibold mb-3">关于工具</h3>
+                    <p class="text-gray-300 text-sm leading-relaxed">
+                        一个简单易用的课表转ICS工具，帮助你将课程表转换为日历格式，轻松导入到苹果日历中。
+                    </p>
+                </div>
+                
+                <!-- 功能特点 -->
+                <div>
+                    <h3 class="text-lg font-semibold mb-3">功能特点</h3>
+                    <ul class="text-gray-300 text-sm space-y-1">
+                        <li>• 支持多时间段课程</li>
+                        <li>• 灵活的时间配置</li>
+                        <li>• 多种提醒设置</li>
+                        <li>• 标准ICS格式</li>
+                    </ul>
+                </div>
+                
+                <!-- 使用说明 -->
+                <div>
+                    <h3 class="text-lg font-semibold mb-3">使用说明</h3>
+                    <ul class="text-gray-300 text-sm space-y-1">
+                        <li>• 填写学期基本信息</li>
+                        <li>• 配置课程时间</li>
+                        <li>• 添加课程和时间段</li>
+                        <li>• 生成并下载ICS文件</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- 版权信息 -->
+            <div class="border-t border-gray-700 mt-8 pt-6 text-center">
+                <p class="text-gray-400 text-sm">
+                    © 2025 课表转ICS工具 | 使用 
+                    <a href="https://tailwindcss.com/" class="text-blue-400 hover:text-blue-300" target="_blank">Tailwind CSS</a> 
+                    构建 | 
+                    <a href="https://github.com" class="text-blue-400 hover:text-blue-300" target="_blank">开源项目</a>
+                </p>
+            </div>
+        </div>
+    </footer>
 
     <script src="script.js"></script>
 </body>
