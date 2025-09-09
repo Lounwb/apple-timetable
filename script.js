@@ -1,0 +1,1226 @@
+// 全局变量
+let courses = [];
+let classTimes = [];
+let uploadedImage = null;
+
+// 默认课程时间配置
+const defaultClassTimes = [
+    { start: "08:30", end: "09:15" },
+    { start: "09:20", end: "10:05" },
+    { start: "10:20", end: "11:05" },
+    { start: "11:10", end: "11:55" },
+    { start: "14:30", end: "15:15" },
+    { start: "15:20", end: "16:05" },
+    { start: "16:20", end: "17:05" },
+    { start: "17:10", end: "17:55" },
+    { start: "19:30", end: "20:15" },
+    { start: "20:20", end: "21:05" },
+    { start: "21:10", end: "21:55" }
+];
+
+// 页面加载完成后初始化
+document.addEventListener('DOMContentLoaded', function() {
+    initializeClassTimes();
+    setupEventListeners();
+    
+    // 设置默认值
+    setDefaultValues();
+});
+
+// 初始化课程时间
+function initializeClassTimes() {
+    classTimes = [...defaultClassTimes];
+    updateClassTimesDisplay();
+}
+
+// 设置事件监听器
+function setupEventListeners() {
+    // 课程时间相关
+    document.getElementById('classesPerDay').addEventListener('change', updateClassTimesCount);
+    document.getElementById('classDuration').addEventListener('change', updateClassTimesDuration);
+    document.getElementById('breakDuration').addEventListener('change', updateClassTimesBreak);
+    document.getElementById('addClassTime').addEventListener('click', addClassTime);
+    
+    // 课程相关
+    document.getElementById('addCourse').addEventListener('click', addCourse);
+    
+    // 生成ICS
+    document.getElementById('generateICS').addEventListener('click', generateICS);
+    
+    // AI图片识别相关
+    setupImageUploadListeners();
+}
+
+// 更新课程时间数量
+function updateClassTimesCount() {
+    const count = parseInt(document.getElementById('classesPerDay').value) || 11;
+    const duration = parseInt(document.getElementById('classDuration').value) || 45;
+    const breakDuration = parseInt(document.getElementById('breakDuration').value) || 15;
+    
+    // 重新生成课程时间
+    classTimes = [];
+    let currentTime = new Date();
+    currentTime.setHours(8, 30, 0, 0); // 8:30开始
+    
+    for (let i = 0; i < count; i++) {
+        const startTime = new Date(currentTime);
+        const endTime = new Date(currentTime.getTime() + duration * 60000);
+        
+        classTimes.push({
+            start: formatTime(startTime),
+            end: formatTime(endTime)
+        });
+        
+        // 计算下一节课开始时间
+        currentTime = new Date(endTime.getTime() + breakDuration * 60000);
+        
+        // 如果是第4节课后，增加午休时间
+        if (i === 3) {
+            currentTime.setHours(14, 30, 0, 0);
+        }
+    }
+    
+    updateClassTimesDisplay();
+}
+
+// 更新课程时长
+function updateClassTimesDuration() {
+    updateClassTimesCount();
+}
+
+// 更新休息时间
+function updateClassTimesBreak() {
+    updateClassTimesCount();
+}
+
+// 格式化时间
+function formatTime(date) {
+    return date.toTimeString().slice(0, 5);
+}
+
+// 解析时间字符串为Date对象
+function parseTime(timeStr) {
+    const [hours, minutes] = timeStr.split(':').map(Number);
+    const date = new Date();
+    date.setHours(hours, minutes, 0, 0);
+    return date;
+}
+
+// 更新课程时间显示
+function updateClassTimesDisplay() {
+    const container = document.getElementById('classTimes');
+    container.innerHTML = '';
+    
+    classTimes.forEach((time, index) => {
+        const timeDiv = document.createElement('div');
+        timeDiv.className = 'flex items-center space-x-2';
+        timeDiv.innerHTML = `
+            <span class="text-sm text-gray-600 w-8">第${index + 1}节</span>
+            <input type="time" value="${time.start}" class="px-2 py-1 border border-gray-300 rounded text-sm" data-index="${index}" data-type="start">
+            <span class="text-sm text-gray-500">-</span>
+            <input type="time" value="${time.end}" class="px-2 py-1 border border-gray-300 rounded text-sm" data-index="${index}" data-type="end">
+            <button type="button" class="text-red-500 hover:text-red-700 text-sm" onclick="removeClassTime(${index})">删除</button>
+        `;
+        
+        // 添加时间变化监听器
+        const startInput = timeDiv.querySelector('[data-type="start"]');
+        const endInput = timeDiv.querySelector('[data-type="end"]');
+        
+        startInput.addEventListener('change', function() {
+            classTimes[index].start = this.value;
+            updateEndTime(index);
+        });
+        
+        endInput.addEventListener('change', function() {
+            classTimes[index].end = this.value;
+        });
+        
+        container.appendChild(timeDiv);
+    });
+}
+
+// 更新结束时间
+function updateEndTime(index) {
+    const startTime = parseTime(classTimes[index].start);
+    const duration = parseInt(document.getElementById('classDuration').value) || 45;
+    const endTime = new Date(startTime.getTime() + duration * 60000);
+    classTimes[index].end = formatTime(endTime);
+    
+    // 更新显示
+    const endInput = document.querySelector(`[data-index="${index}"][data-type="end"]`);
+    if (endInput) {
+        endInput.value = classTimes[index].end;
+    }
+}
+
+// 添加课程时间
+function addClassTime() {
+    const lastTime = classTimes[classTimes.length - 1];
+    const lastEndTime = parseTime(lastTime.end);
+    const breakDuration = parseInt(document.getElementById('breakDuration').value) || 15;
+    const duration = parseInt(document.getElementById('classDuration').value) || 45;
+    
+    const newStartTime = new Date(lastEndTime.getTime() + breakDuration * 60000);
+    const newEndTime = new Date(newStartTime.getTime() + duration * 60000);
+    
+    classTimes.push({
+        start: formatTime(newStartTime),
+        end: formatTime(newEndTime)
+    });
+    
+    updateClassTimesDisplay();
+    document.getElementById('classesPerDay').value = classTimes.length;
+}
+
+// 删除课程时间
+function removeClassTime(index) {
+    classTimes.splice(index, 1);
+    updateClassTimesDisplay();
+    document.getElementById('classesPerDay').value = classTimes.length;
+}
+
+// 添加课程
+function addCourse() {
+    const courseId = Date.now();
+    const course = {
+        id: courseId,
+        name: '',
+        teacher: '',
+        timeSlots: [{
+            id: Date.now() + 1,
+            location: '',
+            startWeek: 1,
+            endWeek: 16,
+            dayOfWeek: 1,
+            startClass: 1,
+            endClass: 2
+        }]
+    };
+    
+    courses.push(course);
+    updateCoursesDisplay();
+}
+
+// 更新课程显示
+function updateCoursesDisplay() {
+    const container = document.getElementById('coursesList');
+    container.innerHTML = '';
+    
+    courses.forEach((course, index) => {
+        const courseDiv = document.createElement('div');
+        courseDiv.className = 'border border-gray-200 rounded-lg p-4 bg-gray-50';
+        courseDiv.innerHTML = `
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-medium text-gray-900">课程 ${index + 1}</h3>
+                <button type="button" class="text-red-500 hover:text-red-700" onclick="removeCourse(${course.id})">删除课程</button>
+            </div>
+            
+            <!-- 课程基本信息 -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">课程名称</label>
+                    <input type="text" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm" 
+                           value="${course.name}" onchange="updateCourse(${course.id}, 'name', this.value)" placeholder="例如：概率论与数理统计">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">教师姓名</label>
+                    <input type="text" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm" 
+                           value="${course.teacher}" onchange="updateCourse(${course.id}, 'teacher', this.value)" placeholder="例如：张老师">
+                </div>
+            </div>
+            
+            <!-- 上课时间段 -->
+            <div class="mb-4">
+                <div class="flex justify-between items-center mb-2">
+                    <h4 class="text-md font-medium text-gray-800">上课时间段</h4>
+                    <button type="button" class="text-sm px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600" onclick="addTimeSlot(${course.id})">添加时间段</button>
+                </div>
+                <div id="timeSlots-${course.id}" class="space-y-3">
+                    ${generateTimeSlotsHTML(course)}
+                </div>
+            </div>
+        `;
+        container.appendChild(courseDiv);
+    });
+}
+
+// 生成时间段HTML
+function generateTimeSlotsHTML(course) {
+    return course.timeSlots.map((timeSlot, index) => `
+        <div class="border border-gray-300 rounded-lg p-3 bg-white">
+            <div class="flex justify-between items-center mb-2">
+                <span class="text-sm font-medium text-gray-700">时间段 ${index + 1}</span>
+                ${course.timeSlots.length > 1 ? `<button type="button" class="text-red-500 hover:text-red-700 text-sm" onclick="removeTimeSlot(${course.id}, ${timeSlot.id})">删除</button>` : ''}
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                <div>
+                    <label class="block text-xs font-medium text-gray-600 mb-1">上课地点</label>
+                    <input type="text" class="w-full px-2 py-1 border border-gray-300 rounded text-sm" 
+                           value="${timeSlot.location}" onchange="updateTimeSlot(${course.id}, ${timeSlot.id}, 'location', this.value)" placeholder="例如：立人楼B417">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-600 mb-1">上课周数</label>
+                    <div class="flex space-x-1">
+                        <input type="number" class="w-16 px-1 py-1 border border-gray-300 rounded text-sm" 
+                               value="${timeSlot.startWeek}" min="1" onchange="updateTimeSlot(${course.id}, ${timeSlot.id}, 'startWeek', parseInt(this.value))">
+                        <span class="text-xs text-gray-500 self-center">-</span>
+                        <input type="number" class="w-16 px-1 py-1 border border-gray-300 rounded text-sm" 
+                               value="${timeSlot.endWeek}" min="1" onchange="updateTimeSlot(${course.id}, ${timeSlot.id}, 'endWeek', parseInt(this.value))">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-600 mb-1">星期几</label>
+                    <select class="w-full px-2 py-1 border border-gray-300 rounded text-sm" 
+                            onchange="updateTimeSlot(${course.id}, ${timeSlot.id}, 'dayOfWeek', parseInt(this.value))">
+                        <option value="1" ${timeSlot.dayOfWeek === 1 ? 'selected' : ''}>星期一</option>
+                        <option value="2" ${timeSlot.dayOfWeek === 2 ? 'selected' : ''}>星期二</option>
+                        <option value="3" ${timeSlot.dayOfWeek === 3 ? 'selected' : ''}>星期三</option>
+                        <option value="4" ${timeSlot.dayOfWeek === 4 ? 'selected' : ''}>星期四</option>
+                        <option value="5" ${timeSlot.dayOfWeek === 5 ? 'selected' : ''}>星期五</option>
+                        <option value="6" ${timeSlot.dayOfWeek === 6 ? 'selected' : ''}>星期六</option>
+                        <option value="7" ${timeSlot.dayOfWeek === 7 ? 'selected' : ''}>星期日</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-600 mb-1">上课节次</label>
+                    <div class="flex space-x-1">
+                        <select class="w-16 px-1 py-1 border border-gray-300 rounded text-sm" 
+                                onchange="updateTimeSlot(${course.id}, ${timeSlot.id}, 'startClass', parseInt(this.value))">
+                            ${classTimes.map((_, i) => `<option value="${i + 1}" ${timeSlot.startClass === i + 1 ? 'selected' : ''}>${i + 1}</option>`).join('')}
+                        </select>
+                        <span class="text-xs text-gray-500 self-center">-</span>
+                        <select class="w-16 px-1 py-1 border border-gray-300 rounded text-sm" 
+                                onchange="updateTimeSlot(${course.id}, ${timeSlot.id}, 'endClass', parseInt(this.value))">
+                            ${classTimes.map((_, i) => `<option value="${i + 1}" ${timeSlot.endClass === i + 1 ? 'selected' : ''}>${i + 1}</option>`).join('')}
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `).join('');
+}
+
+// 更新课程信息
+function updateCourse(courseId, field, value) {
+    const course = courses.find(c => c.id === courseId);
+    if (course) {
+        course[field] = value;
+    }
+}
+
+// 添加时间段
+function addTimeSlot(courseId) {
+    const course = courses.find(c => c.id === courseId);
+    if (course) {
+        const newTimeSlot = {
+            id: Date.now(),
+            location: '',
+            startWeek: 1,
+            endWeek: 16,
+            dayOfWeek: 1,
+            startClass: 1,
+            endClass: 2
+        };
+        course.timeSlots.push(newTimeSlot);
+        updateCoursesDisplay();
+    }
+}
+
+// 删除时间段
+function removeTimeSlot(courseId, timeSlotId) {
+    const course = courses.find(c => c.id === courseId);
+    if (course && course.timeSlots.length > 1) {
+        course.timeSlots = course.timeSlots.filter(ts => ts.id !== timeSlotId);
+        updateCoursesDisplay();
+    }
+}
+
+// 更新时间段信息
+function updateTimeSlot(courseId, timeSlotId, field, value) {
+    const course = courses.find(c => c.id === courseId);
+    if (course) {
+        const timeSlot = course.timeSlots.find(ts => ts.id === timeSlotId);
+        if (timeSlot) {
+            timeSlot[field] = value;
+        }
+    }
+}
+
+// 删除课程
+function removeCourse(courseId) {
+    courses = courses.filter(c => c.id !== courseId);
+    updateCoursesDisplay();
+}
+
+// 生成ICS文件
+function generateICS() {
+    // 验证输入
+    if (!validateInputs()) {
+        return;
+    }
+    
+    const schoolAddress = document.getElementById('schoolAddress').value;
+    const semesterStartDate = document.getElementById('semesterStartDate').value;
+    const totalWeeks = parseInt(document.getElementById('totalWeeks').value);
+    
+    if (!schoolAddress || !semesterStartDate || !totalWeeks) {
+        showErrorMessage('请填写完整的学期基本信息！');
+        return;
+    }
+    
+    if (courses.length === 0) {
+        showErrorMessage('请至少添加一门课程！');
+        return;
+    }
+    
+    // 生成ICS内容
+    let icsContent = generateICSHeader();
+    
+    courses.forEach(course => {
+        course.timeSlots.forEach(timeSlot => {
+            icsContent += generateCourseEvent(course, timeSlot, schoolAddress, semesterStartDate, totalWeeks);
+        });
+    });
+    
+    icsContent += 'END:VCALENDAR';
+    
+    // 下载文件
+    downloadICS(icsContent);
+}
+
+// 验证输入
+function validateInputs() {
+    const schoolAddress = document.getElementById('schoolAddress').value;
+    const semesterStartDate = document.getElementById('semesterStartDate').value;
+    const totalWeeks = parseInt(document.getElementById('totalWeeks').value);
+    
+    if (!schoolAddress.trim()) {
+        showErrorMessage('请输入学校地址！');
+        return false;
+    }
+    
+    if (!semesterStartDate) {
+        showErrorMessage('请选择学期开始日期！');
+        return false;
+    }
+    
+    if (!totalWeeks || totalWeeks < 1) {
+        showErrorMessage('请输入有效的学期周数！');
+        return false;
+    }
+    
+    // 验证课程信息
+    for (let i = 0; i < courses.length; i++) {
+        const course = courses[i];
+        if (!course.name.trim()) {
+            showErrorMessage(`请填写第${i + 1}门课程的名称！`);
+            return false;
+        }
+        
+        // 验证时间段
+        for (let j = 0; j < course.timeSlots.length; j++) {
+            const timeSlot = course.timeSlots[j];
+            if (!timeSlot.location.trim()) {
+                showErrorMessage(`请填写第${i + 1}门课程第${j + 1}个时间段的上课地点！`);
+                return false;
+            }
+            if (timeSlot.startWeek > timeSlot.endWeek) {
+                showErrorMessage(`第${i + 1}门课程第${j + 1}个时间段的开始周数不能大于结束周数！`);
+                return false;
+            }
+            if (timeSlot.startClass > timeSlot.endClass) {
+                showErrorMessage(`第${i + 1}门课程第${j + 1}个时间段的开始节次不能大于结束节次！`);
+                return false;
+            }
+            if (timeSlot.endWeek > totalWeeks) {
+                showErrorMessage(`第${i + 1}门课程第${j + 1}个时间段的结束周数不能超过学期总周数！`);
+                return false;
+            }
+        }
+    }
+    
+    return true;
+}
+
+// 生成ICS文件头
+function generateICSHeader() {
+    const now = new Date();
+    const timestamp = now.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+    
+    return `BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Course Schedule//Course to ICS//EN
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:课程表
+X-WR-TIMEZONE:Asia/Shanghai
+`;
+}
+
+// 生成课程事件
+function generateCourseEvent(course, timeSlot, schoolAddress, semesterStartDate, totalWeeks) {
+    const startDate = new Date(semesterStartDate);
+    const dayOfWeek = timeSlot.dayOfWeek; // 1=Monday, 7=Sunday
+    const startWeek = timeSlot.startWeek;
+    const endWeek = timeSlot.endWeek;
+    
+    // 计算第一次上课的日期
+    const firstClassDate = new Date(startDate);
+    const daysToAdd = (startWeek - 1) * 7 + (dayOfWeek - 1);
+    firstClassDate.setDate(startDate.getDate() + daysToAdd);
+    
+    // 计算课程时间
+    const startClassTime = classTimes[timeSlot.startClass - 1];
+    const endClassTime = classTimes[timeSlot.endClass - 1];
+    
+    const startTime = `${formatDateForICS(firstClassDate)}T${startClassTime.start.replace(':', '')}00`;
+    const endTime = `${formatDateForICS(firstClassDate)}T${endClassTime.end.replace(':', '')}00`;
+    
+    // 计算重复次数
+    const repeatCount = endWeek - startWeek;
+    
+    // 生成事件
+    const eventId = generateEventId();
+    const summary = `${course.name}@${timeSlot.location}`;
+    const location = `${schoolAddress}${timeSlot.location}`;
+    const description = `教师：${course.teacher || '未指定'}`;
+    
+    let event = `BEGIN:VEVENT
+UID:${eventId}
+DTSTART:${startTime}
+DTEND:${endTime}
+SUMMARY:${summary}
+LOCATION:${location}
+DESCRIPTION:${description}
+RRULE:FREQ=WEEKLY;COUNT=${repeatCount + 1}
+`;
+    
+    // 添加提醒
+    const reminders = [
+        { id: 'reminder1', trigger: '-PT1H', desc: '课前1小时提醒' },
+        { id: 'reminder2', trigger: '-PT30M', desc: '课前30分钟提醒' },
+        { id: 'reminder3', trigger: '-PT15M', desc: '课前15分钟提醒' },
+        { id: 'reminder4', trigger: '-PT5M', desc: '课前5分钟提醒' },
+        { id: 'reminder5', trigger: '-PT1M', desc: '课前1分钟提醒' }
+    ];
+    
+    reminders.forEach(reminder => {
+        if (document.getElementById(reminder.id).checked) {
+            event += `BEGIN:VALARM
+TRIGGER:${reminder.trigger}
+ACTION:DISPLAY
+DESCRIPTION:${reminder.desc}
+END:VALARM
+`;
+        }
+    });
+    
+    event += `END:VEVENT
+`;
+    
+    return event;
+}
+
+// 格式化日期为ICS格式
+function formatDateForICS(date) {
+    return date.toISOString().slice(0, 10).replace(/-/g, '');
+}
+
+// 生成事件ID
+function generateEventId() {
+    return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}@coursetools.com`;
+}
+
+// 设置默认值
+function setDefaultValues() {
+    // 设置默认学期开始日期为当前日期
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+    document.getElementById('semesterStartDate').value = `${year}-${month}-${day}`;
+    
+    // 设置默认总周数
+    document.getElementById('totalWeeks').value = '16';
+}
+
+// 下载ICS文件
+function downloadICS(content) {
+    const blob = new Blob([content], { type: 'text/calendar;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = '课程表.ics';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    
+    // 显示成功消息
+    showSuccessMessage('ICS文件已生成并开始下载！');
+}
+
+// 显示成功消息
+function showSuccessMessage(message) {
+    showToast(message, 'bg-green-500');
+}
+
+// 显示错误消息
+function showErrorMessage(message) {
+    showToast(message, 'bg-red-500');
+}
+
+// 显示提示消息
+function showToast(message, bgColor) {
+    // 创建提示框
+    const toast = document.createElement('div');
+    toast.className = `fixed top-4 right-4 ${bgColor} text-white px-6 py-3 rounded-lg shadow-lg z-50 transform transition-all duration-300 translate-x-full`;
+    toast.textContent = message;
+    
+    document.body.appendChild(toast);
+    
+    // 显示动画
+    setTimeout(() => {
+        toast.classList.remove('translate-x-full');
+    }, 100);
+    
+    // 3秒后自动消失
+    setTimeout(() => {
+        toast.classList.add('translate-x-full');
+        setTimeout(() => {
+            if (document.body.contains(toast)) {
+                document.body.removeChild(toast);
+            }
+        }, 300);
+    }, 3000);
+}
+
+// ==================== AI图片识别功能 ====================
+
+// 设置图片上传监听器
+function setupImageUploadListeners() {
+    const dropZone = document.getElementById('dropZone');
+    const imageUpload = document.getElementById('imageUpload');
+    const analyzeButton = document.getElementById('analyzeImage');
+    const removeButton = document.getElementById('removeImage');
+    
+    // 点击上传 - 只在占位符区域点击时触发
+    const uploadPlaceholder = document.getElementById('uploadPlaceholder');
+    uploadPlaceholder.addEventListener('click', (e) => {
+        e.stopPropagation();
+        imageUpload.click();
+    });
+    
+    // 文件选择
+    imageUpload.addEventListener('change', handleFileSelect);
+    
+    // 拖拽上传
+    dropZone.addEventListener('dragover', handleDragOver);
+    dropZone.addEventListener('drop', handleDrop);
+    
+    // 分析图片
+    analyzeButton.addEventListener('click', (e) => {
+        e.stopPropagation();
+        analyzeImage();
+    });
+    
+    // 移除图片
+    removeButton.addEventListener('click', (e) => {
+        e.stopPropagation();
+        removeImage();
+    });
+}
+
+// 处理文件选择
+function handleFileSelect(event) {
+    const file = event.target.files[0];
+    if (file) {
+        processImageFile(file);
+    }
+}
+
+// 处理拖拽悬停
+function handleDragOver(event) {
+    event.preventDefault();
+    event.currentTarget.classList.add('border-primary', 'bg-blue-50');
+}
+
+// 处理拖拽放置
+function handleDrop(event) {
+    event.preventDefault();
+    event.currentTarget.classList.remove('border-primary', 'bg-blue-50');
+    
+    const files = event.dataTransfer.files;
+    if (files.length > 0) {
+        processImageFile(files[0]);
+    }
+}
+
+// 处理图片文件
+function processImageFile(file) {
+    if (!file.type.startsWith('image/')) {
+        showErrorMessage('请选择图片文件！');
+        return;
+    }
+    
+    if (file.size > 10 * 1024 * 1024) { // 10MB限制
+        showErrorMessage('图片文件过大，请选择小于10MB的图片！');
+        return;
+    }
+    
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        uploadedImage = e.target.result;
+        showImagePreview(uploadedImage);
+    };
+    reader.readAsDataURL(file);
+}
+
+// 显示图片预览
+function showImagePreview(imageData) {
+    const placeholder = document.getElementById('uploadPlaceholder');
+    const preview = document.getElementById('imagePreview');
+    const previewImg = document.getElementById('previewImg');
+    
+    // 隐藏占位符，显示图片预览
+    placeholder.classList.add('hidden');
+    previewImg.src = imageData;
+    preview.classList.remove('hidden');
+    
+    updateAIStatus('ready', '图片已上传，点击"开始识别"按钮进行AI分析');
+}
+
+// 移除图片
+function removeImage() {
+    uploadedImage = null;
+    const placeholder = document.getElementById('uploadPlaceholder');
+    const preview = document.getElementById('imagePreview');
+    
+    // 显示占位符，隐藏图片预览
+    placeholder.classList.remove('hidden');
+    preview.classList.add('hidden');
+    document.getElementById('imageUpload').value = '';
+    updateAIStatus('idle', '请上传课表图片开始AI识别');
+}
+
+// 更新AI状态显示
+function updateAIStatus(status, message) {
+    const statusDiv = document.getElementById('aiStatus');
+    
+    switch (status) {
+        case 'idle':
+            statusDiv.innerHTML = `
+                <div class="text-center text-gray-500">
+                    <svg class="mx-auto h-12 w-12 text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <p class="text-sm">${message}</p>
+                </div>
+            `;
+            break;
+        case 'ready':
+            statusDiv.innerHTML = `
+                <div class="text-center text-blue-600">
+                    <svg class="mx-auto h-12 w-12 text-blue-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                    </svg>
+                    <p class="text-sm">${message}</p>
+                </div>
+            `;
+            break;
+        case 'analyzing':
+            statusDiv.innerHTML = `
+                <div class="text-center text-blue-600">
+                    <div class="mx-auto h-12 w-12 mb-2">
+                        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+                    </div>
+                    <p class="text-sm">${message}</p>
+                </div>
+            `;
+            break;
+        case 'success':
+            statusDiv.innerHTML = `
+                <div class="text-center text-green-600">
+                    <svg class="mx-auto h-12 w-12 text-green-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                    <p class="text-sm">${message}</p>
+                </div>
+            `;
+            break;
+        case 'error':
+            statusDiv.innerHTML = `
+                <div class="text-center text-red-600">
+                    <svg class="mx-auto h-12 w-12 text-red-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                    <p class="text-sm">${message}</p>
+                </div>
+            `;
+            break;
+    }
+}
+
+// 更新模型选项
+function updateModelOptions() {
+    const selectedProvider = document.querySelector('input[name="apiProvider"]:checked').value;
+    const modelSelect = document.getElementById('modelSelect');
+    const apiKeyInput = document.getElementById('apiKey');
+    
+    // 清空现有选项
+    modelSelect.innerHTML = '';
+    
+    if (selectedProvider === 'openai') {
+        // OpenAI模型选项
+        const openaiModels = [
+            { value: 'gpt-4o', text: 'GPT-4o (推荐)' },
+            { value: 'gpt-4o-mini', text: 'GPT-4o Mini (经济)' },
+            { value: 'gpt-4-turbo', text: 'GPT-4 Turbo' }
+        ];
+        
+        openaiModels.forEach(model => {
+            const option = document.createElement('option');
+            option.value = model.value;
+            option.textContent = model.text;
+            modelSelect.appendChild(option);
+        });
+        
+        apiKeyInput.placeholder = 'sk-...';
+    } else if (selectedProvider === 'deepseek') {
+        // DeepSeek模型选项
+        const deepseekModels = [
+            { value: 'deepseek-vl', text: 'DeepSeek-VL (推荐)' },
+            { value: 'deepseek-chat', text: 'DeepSeek-Chat' }
+        ];
+        
+        deepseekModels.forEach(model => {
+            const option = document.createElement('option');
+            option.value = model.value;
+            option.textContent = model.text;
+            modelSelect.appendChild(option);
+        });
+        
+        apiKeyInput.placeholder = 'sk-...';
+    } else if (selectedProvider === 'qwen') {
+        // Qwen模型选项
+        const qwenModels = [
+            { value: 'qwen-vl-max', text: 'Qwen-VL-Max (推荐)' },
+            { value: 'qwen-vl-plus', text: 'Qwen-VL-Plus' },
+            { value: 'qwen-max', text: 'Qwen-Max' }
+        ];
+        
+        qwenModels.forEach(model => {
+            const option = document.createElement('option');
+            option.value = model.value;
+            option.textContent = model.text;
+            modelSelect.appendChild(option);
+        });
+        
+        apiKeyInput.placeholder = 'sk-...';
+    }
+}
+
+// 分析图片
+async function analyzeImage() {
+    if (!uploadedImage) {
+        showErrorMessage('请先上传图片！');
+        return;
+    }
+    
+    // 默认使用Qwen-VL-Max模型
+    const model = 'qwen-vl-max';
+    
+    updateAIStatus('analyzing', 'AI正在分析课表图片，请稍候...');
+    
+    try {
+        // 直接调用Qwen API
+        const result = await callQwenAPI(model, uploadedImage);
+        
+        if (result.success) {
+            parseAndFillData(result.data);
+            updateAIStatus('success', '识别完成！数据已自动填充到表单中，请检查并调整。');
+            showSuccessMessage('AI识别完成！请检查并调整识别结果。');
+        } else {
+            throw new Error(result.error || '识别失败');
+        }
+    } catch (error) {
+        console.error('AI识别错误:', error);
+        updateAIStatus('error', `识别失败：${error.message}`);
+        showErrorMessage(`AI识别失败：${error.message}`);
+    }
+}
+
+// 调用OpenAI API
+async function callOpenAIAPI(apiKey, model, imageData) {
+    const prompt = `请分析这张课表图片，提取出所有课程信息，并按照以下JSON格式返回：
+
+{
+  "courses": [
+    {
+      "name": "课程名称",
+      "teacher": "教师姓名",
+      "timeSlots": [
+        {
+          "location": "上课地点",
+          "startWeek": 1,
+          "endWeek": 16,
+          "dayOfWeek": 1,
+          "startClass": 1,
+          "endClass": 2
+        }
+      ]
+    }
+  ]
+}
+
+注意：
+1. dayOfWeek: 1=星期一, 2=星期二, ..., 7=星期日
+2. startClass和endClass: 第几节课（从1开始）
+3. 如果同一门课程在不同周次有不同安排，请为每个时间段创建单独的timeSlot
+4. 请仔细识别所有课程信息，包括课程名称、教师、地点、时间等
+5. 只返回JSON格式，不要包含其他文字
+6. 不要提取学期信息或课程时间配置，这些需要用户手动输入`;
+
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${apiKey}`
+        },
+        body: JSON.stringify({
+            model: model,
+            messages: [
+                {
+                    role: 'user',
+                    content: [
+                        {
+                            type: 'text',
+                            text: prompt
+                        },
+                        {
+                            type: 'image_url',
+                            image_url: {
+                                url: imageData
+                            }
+                        }
+                    ]
+                }
+            ],
+            max_tokens: 4000,
+            temperature: 0.1
+        })
+    });
+    
+    if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error?.message || `API请求失败: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    const content = data.choices[0].message.content;
+    
+    try {
+        // 尝试提取JSON
+        const jsonMatch = content.match(/\{[\s\S]*\}/);
+        if (!jsonMatch) {
+            throw new Error('无法从响应中提取JSON数据');
+        }
+        
+        const jsonData = JSON.parse(jsonMatch[0]);
+        return { success: true, data: jsonData };
+    } catch (parseError) {
+        throw new Error('AI返回的数据格式不正确，请重试');
+    }
+}
+
+// 调用DeepSeek API
+async function callDeepSeekAPI(apiKey, model, imageData) {
+    const prompt = `请分析这张课表图片，提取出所有课程信息，并按照以下JSON格式返回：
+
+{
+  "courses": [
+    {
+      "name": "课程名称",
+      "teacher": "教师姓名",
+      "timeSlots": [
+        {
+          "location": "上课地点",
+          "startWeek": 1,
+          "endWeek": 16,
+          "dayOfWeek": 1,
+          "startClass": 1,
+          "endClass": 2
+        }
+      ]
+    }
+  ]
+}
+
+注意：
+1. dayOfWeek: 1=星期一, 2=星期二, ..., 7=星期日
+2. startClass和endClass: 第几节课（从1开始）
+3. 如果同一门课程在不同周次有不同安排，请为每个时间段创建单独的timeSlot
+4. 请仔细识别所有课程信息，包括课程名称、教师、地点、时间等
+5. 只返回JSON格式，不要包含其他文字
+6. 不要提取学期信息或课程时间配置，这些需要用户手动输入`;
+
+    // 根据模型选择不同的API端点
+    let apiUrl, requestBody;
+    
+    if (model === 'deepseek-vl') {
+        // DeepSeek-VL API
+        apiUrl = 'https://api.deepseek.com/v1/chat/completions';
+        requestBody = {
+            model: 'deepseek-vl',
+            messages: [
+                {
+                    role: 'user',
+                    content: [
+                        {
+                            type: 'text',
+                            text: prompt
+                        },
+                        {
+                            type: 'image_url',
+                            image_url: {
+                                url: imageData
+                            }
+                        }
+                    ]
+                }
+            ],
+            max_tokens: 4000,
+            temperature: 0.1
+        };
+    } else {
+        // DeepSeek-Chat API (不支持图片，需要先转换)
+        apiUrl = 'https://api.deepseek.com/v1/chat/completions';
+        requestBody = {
+            model: 'deepseek-chat',
+            messages: [
+                {
+                    role: 'user',
+                    content: prompt + '\n\n注意：由于当前模型不支持图片识别，请根据常见的课表格式进行推断。'
+                }
+            ],
+            max_tokens: 4000,
+            temperature: 0.1
+        };
+    }
+
+    const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${apiKey}`
+        },
+        body: JSON.stringify(requestBody)
+    });
+    
+    if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error?.message || `API请求失败: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    const content = data.choices[0].message.content;
+    
+    try {
+        // 尝试提取JSON
+        const jsonMatch = content.match(/\{[\s\S]*\}/);
+        if (!jsonMatch) {
+            throw new Error('无法从响应中提取JSON数据');
+        }
+        
+        const jsonData = JSON.parse(jsonMatch[0]);
+        return { success: true, data: jsonData };
+    } catch (parseError) {
+        throw new Error('AI返回的数据格式不正确，请重试');
+    }
+}
+
+// 调用Qwen API
+async function callQwenAPI(model, imageData) {
+    const prompt = `请分析这张课表图片，提取出所有课程信息，并按照以下JSON格式返回：
+
+{
+  "courses": [
+    {
+      "name": "课程名称",
+      "teacher": "教师姓名",
+      "timeSlots": [
+        {
+          "location": "上课地点",
+          "startWeek": 1,
+          "endWeek": 16,
+          "dayOfWeek": 1,
+          "startClass": 1,
+          "endClass": 2
+        }
+      ]
+    }
+  ]
+}
+
+注意：
+1. dayOfWeek: 1=星期一, 2=星期二, ..., 7=星期日
+2. startClass和endClass: 第几节课（从1开始）
+3. 如果同一门课程在不同周次有不同安排，请为每个时间段创建单独的timeSlot
+4. 请仔细识别所有课程信息，包括课程名称、教师、地点、时间等
+5. 只返回JSON格式，不要包含其他文字`;
+
+    // 使用兼容模式的API端点
+    const apiUrl = 'https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions';
+    
+    // 从GitHub Secrets获取API Key
+    const apiKey = await getApiKey();
+    if (!apiKey) {
+        throw new Error('无法获取API Key，请检查GitHub Secrets配置');
+    }
+    
+    let requestBody;
+    
+    if (model.startsWith('qwen-vl')) {
+        // Qwen-VL模型支持图片
+        requestBody = {
+            model: model,
+            messages: [
+                {
+                    role: 'user',
+                    content: [
+                        {
+                            type: 'image_url',
+                            image_url: {
+                                url: imageData
+                            }
+                        },
+                        {
+                            type: 'text',
+                            text: prompt
+                        }
+                    ]
+                }
+            ],
+            max_tokens: 4000,
+            temperature: 0.1
+        };
+    } else {
+        // Qwen-Max等文本模型
+        requestBody = {
+            model: model,
+            messages: [
+                {
+                    role: 'user',
+                    content: prompt + '\n\n注意：由于当前模型不支持图片识别，请根据常见的课表格式进行推断。'
+                }
+            ],
+            max_tokens: 4000,
+            temperature: 0.1
+        };
+    }
+
+    const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${apiKey}`
+        },
+        body: JSON.stringify(requestBody)
+    });
+    
+    if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error?.message || errorData.message || `API请求失败: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    const content = data.choices[0].message.content;
+    
+    try {
+        // 尝试提取JSON
+        const jsonMatch = content.match(/\{[\s\S]*\}/);
+        if (!jsonMatch) {
+            throw new Error('无法从响应中提取JSON数据');
+        }
+        
+        const jsonData = JSON.parse(jsonMatch[0]);
+        return { success: true, data: jsonData };
+    } catch (parseError) {
+        throw new Error('AI返回的数据格式不正确，请重试');
+    }
+}
+
+// 获取API Key（从GitHub Secrets或环境变量）
+async function getApiKey() {
+    // 在GitHub Pages环境中，API Key应该通过GitHub Actions注入
+    // 这里我们使用一个简单的配置方式
+    const config = {
+        // 这个值会在GitHub Actions构建时被替换
+        apiKey: ''
+    };
+    
+    // 如果API Key还是占位符，说明没有正确配置
+    if (config.apiKey === '') {
+        return null;
+    }
+    
+    return config.apiKey;
+}
+
+// 解析并填充数据
+function parseAndFillData(data) {
+    try {
+        // 清空现有课程
+        courses = [];
+        
+        // 填充课程信息
+        if (data.courses && data.courses.length > 0) {
+            data.courses.forEach(courseData => {
+                const course = {
+                    id: Date.now() + Math.random(),
+                    name: courseData.name || '',
+                    teacher: courseData.teacher || '',
+                    timeSlots: []
+                };
+                
+                if (courseData.timeSlots && courseData.timeSlots.length > 0) {
+                    courseData.timeSlots.forEach(timeSlotData => {
+                        course.timeSlots.push({
+                            id: Date.now() + Math.random(),
+                            location: timeSlotData.location || '',
+                            startWeek: timeSlotData.startWeek || 1,
+                            endWeek: timeSlotData.endWeek || 16,
+                            dayOfWeek: timeSlotData.dayOfWeek || 1,
+                            startClass: timeSlotData.startClass || 1,
+                            endClass: timeSlotData.endClass || 2
+                        });
+                    });
+                } else {
+                    // 如果没有时间段，创建一个默认的
+                    course.timeSlots.push({
+                        id: Date.now() + Math.random(),
+                        location: '',
+                        startWeek: 1,
+                        endWeek: 16,
+                        dayOfWeek: 1,
+                        startClass: 1,
+                        endClass: 2
+                    });
+                }
+                
+                courses.push(course);
+            });
+        }
+        
+        // 更新显示
+        updateCoursesDisplay();
+        
+        // 滚动到课程信息区域
+        document.getElementById('coursesList').scrollIntoView({ behavior: 'smooth' });
+        
+    } catch (error) {
+        console.error('数据解析错误:', error);
+        throw new Error('数据解析失败，请检查AI返回的数据格式');
+    }
+}
