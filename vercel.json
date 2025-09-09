@@ -1,4 +1,5 @@
 {
+  "version": "apple-timetable@0.1.0",
   "functions": {
     "api/analyze-schedule.js": {
       "runtime": "@vercel/node"
