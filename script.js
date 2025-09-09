@@ -47,6 +47,9 @@ function setupEventListeners() {
     // 生成ICS
     document.getElementById('generateICS').addEventListener('click', generateICS);
     
+    // 一键导入到Apple日历
+    document.getElementById('importToCalendar').addEventListener('click', importToAppleCalendar);
+    
     // AI图片识别相关
     setupImageUploadListeners();
 }
@@ -384,8 +387,19 @@ function generateICS() {
     
     icsContent += 'END:VCALENDAR';
     
+    // 存储ICS内容供一键导入使用
+    window.currentICSContent = icsContent;
+    
     // 下载文件
     downloadICS(icsContent);
+    
+    // 显示一键导入按钮（仅在Apple设备上）
+    if (isAppleDevice()) {
+        document.getElementById('importSection').classList.remove('hidden');
+        showSuccessMessage('ICS文件生成成功！Apple设备用户可以使用一键导入功能。');
+    } else {
+        showSuccessMessage('ICS文件生成成功！请下载后导入到您的日历应用中。');
+    }
 }
 
 // 验证输入
@@ -1224,5 +1238,63 @@ function parseAndFillData(data) {
     } catch (error) {
         console.error('数据解析错误:', error);
         throw new Error('数据解析失败，请检查AI返回的数据格式');
+    }
+}
+
+// 检测是否为Apple设备
+function isAppleDevice() {
+    const userAgent = navigator.userAgent;
+    return /iPad|iPhone|iPod|Macintosh/.test(userAgent);
+}
+
+// 一键导入到Apple日历
+function importToAppleCalendar() {
+    if (!window.currentICSContent) {
+        showErrorMessage('请先生成ICS文件！');
+        return;
+    }
+    
+    try {
+        // 创建Blob对象
+        const blob = new Blob([window.currentICSContent], { type: 'text/calendar;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        
+        // 创建隐藏的下载链接，使用webcal协议
+        const link = document.createElement('a');
+        const webcalUrl = url.replace('blob:', 'webcal://');
+        
+        // 对于Apple设备，尝试使用不同的方式
+        if (/iPad|iPhone|iPod/.test(navigator.userAgent)) {
+            // iOS设备：尝试直接打开日历应用
+            const calendarUrl = `data:text/calendar;charset=utf8,${encodeURIComponent(window.currentICSContent)}`;
+            window.open(calendarUrl, '_blank');
+            
+            showSuccessMessage('正在打开日历应用，请确认导入课程表。');
+        } else if (/Macintosh/.test(navigator.userAgent)) {
+            // macOS设备：下载文件并提示用户
+            link.href = url;
+            link.download = '课程表.ics';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            showSuccessMessage('ICS文件已下载，请双击文件导入到日历应用。');
+        } else {
+            // 其他设备：普通下载
+            link.href = url;
+            link.download = '课程表.ics';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            showSuccessMessage('ICS文件已下载，请导入到您的日历应用。');
+        }
+        
+        // 清理URL对象
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+        
+    } catch (error) {
+        console.error('导入失败:', error);
+        showErrorMessage('导入失败，请手动下载ICS文件。');
     }
 }

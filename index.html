@@ -13,46 +13,54 @@
                 extend: {
                     colors: {
                         primary: '#007AFF',
-                        secondary: '#5856D6',
+                        'primary-light': '#E3F2FD',
+                        'primary-dark': '#0056CC',
+                        secondary: '#2196F3',
+                        'blue-apple': '#007AFF',
+                        'blue-light': '#F0F8FF',
                     }
                 }
             }
         }
     </script>
 </head>
-<body class="bg-gray-50 min-h-screen">
+<body class="bg-gradient-to-br from-blue-light to-white min-h-screen">
     <div class="container mx-auto px-4 py-8 max-w-4xl">
         <!-- 页面标题 -->
         <div class="text-center mb-8">
-            <h1 class="text-3xl font-bold text-gray-900 mb-2">课表转ICS工具</h1>
-            <p class="text-gray-600">将你的课表转换为ICS格式，轻松导入到苹果日历中</p>
+            <h1 class="text-3xl font-bold text-primary mb-2">课表转ICS工具</h1>
+            <p class="text-blue-600">将你的课表转换为ICS格式，轻松导入到苹果日历中</p>
         </div>
 
         <!-- 主要内容区域 -->
         <div class="space-y-8">
             <!-- AI图片识别功能 -->
-            <div class="bg-white rounded-lg shadow-md p-6">
-                <h2 class="text-xl font-semibold text-gray-900 mb-4">🤖 AI智能识别</h2>
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div class="bg-white rounded-lg shadow-lg border border-blue-100 p-6">
+                <h2 class="text-xl font-semibold text-primary mb-6 flex items-center">
+                    <span class="mr-2">🤖</span>AI智能识别
+                </h2>
+                <div class="space-y-6">
                     <!-- 图片上传区域 -->
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">上传课表图片</label>
-                        <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-primary transition-colors relative" id="dropZone">
+                        <label class="block text-sm font-medium text-blue-700 mb-3">上传课表图片</label>
+                        <div class="border-2 border-dashed border-blue-200 rounded-lg p-8 text-center hover:border-primary hover:bg-primary-light/20 transition-all duration-200 relative" id="dropZone">
                             <input type="file" id="imageUpload" accept="image/*" class="hidden">
-                            <div id="uploadPlaceholder" class="space-y-2">
-                                <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+                            <div id="uploadPlaceholder" class="space-y-3">
+                                <svg class="mx-auto h-16 w-16 text-blue-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
                                     <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
                                 </svg>
-                                <p class="text-sm text-gray-600">点击或拖拽上传课表图片</p>
-                                <p class="text-xs text-gray-500">支持 JPG、PNG、GIF 格式</p>
+                                <div>
+                                    <p class="text-base text-blue-600 font-medium">点击或拖拽上传课表图片</p>
+                                    <p class="text-sm text-blue-400 mt-1">支持 JPG、PNG、GIF 格式，最大10MB</p>
+                                </div>
                             </div>
                             <div id="imagePreview" class="hidden">
                                 <img id="previewImg" class="max-w-full h-auto rounded-lg shadow-sm" alt="课表预览">
-                                <div class="mt-2 flex space-x-2">
-                                    <button type="button" id="analyzeImage" class="px-4 py-2 bg-primary text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-primary">
+                                <div class="mt-4 flex justify-center space-x-3">
+                                    <button type="button" id="analyzeImage" class="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 transition-colors font-medium">
                                         🔍 开始识别
                                     </button>
-                                    <button type="button" id="removeImage" class="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500">
+                                    <button type="button" id="removeImage" class="px-6 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors">
                                         移除图片
                                     </button>
                                 </div>
@@ -62,13 +70,14 @@
                     
                     <!-- AI识别状态 -->
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">识别状态</label>
-                        <div id="aiStatus" class="bg-gray-50 rounded-lg p-4 min-h-[200px] flex items-center justify-center">
-                            <div class="text-center text-gray-500">
-                                <svg class="mx-auto h-12 w-12 text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <label class="block text-sm font-medium text-blue-700 mb-3">识别状态</label>
+                        <div id="aiStatus" class="bg-blue-50 rounded-lg p-6 min-h-[180px] flex items-center justify-center border border-blue-100">
+                            <div class="text-center text-blue-600">
+                                <svg class="mx-auto h-16 w-16 text-blue-400 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                 </svg>
-                                <p class="text-sm">请上传课表图片开始AI识别</p>
+                                <p class="text-base font-medium">请上传课表图片开始AI识别</p>
+                                <p class="text-sm text-blue-400 mt-1">支持自动提取课程信息</p>
                             </div>
                         </div>
                     </div>
@@ -76,53 +85,53 @@
             </div>
 
             <!-- 学期基本信息 -->
-            <div class="bg-white rounded-lg shadow-md p-6">
-                <h2 class="text-xl font-semibold text-gray-900 mb-4">学期基本信息</h2>
+            <div class="bg-white rounded-lg shadow-lg border border-blue-100 p-6">
+                <h2 class="text-xl font-semibold text-primary mb-4">学期基本信息</h2>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">学校地址</label>
-                        <input type="text" id="schoolAddress" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary" placeholder="例如：电子科技大学清水河校区">
+                        <label class="block text-sm font-medium text-blue-700 mb-2">学校地址</label>
+                        <input type="text" id="schoolAddress" class="w-full px-3 py-2 border border-blue-200 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary" placeholder="例如：电子科技大学清水河校区">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">学期第一天</label>
-                        <input type="date" id="semesterStartDate" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary">
+                        <label class="block text-sm font-medium text-blue-700 mb-2">学期第一天</label>
+                        <input type="date" id="semesterStartDate" class="w-full px-3 py-2 border border-blue-200 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">学期总周数</label>
-                        <input type="number" id="totalWeeks" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary" placeholder="例如：16" min="1" max="30">
+                        <label class="block text-sm font-medium text-blue-700 mb-2">学期总周数</label>
+                        <input type="number" id="totalWeeks" class="w-full px-3 py-2 border border-blue-200 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary" placeholder="例如：16" min="1" max="30">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">每节课时长（分钟）</label>
-                        <input type="number" id="classDuration" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary" placeholder="45" min="30" max="120" value="45">
+                        <label class="block text-sm font-medium text-blue-700 mb-2">每节课时长（分钟）</label>
+                        <input type="number" id="classDuration" class="w-full px-3 py-2 border border-blue-200 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary" placeholder="45" min="30" max="120" value="45">
                     </div>
                 </div>
             </div>
 
             <!-- 课程时间配置 -->
-            <div class="bg-white rounded-lg shadow-md p-6">
-                <h2 class="text-xl font-semibold text-gray-900 mb-4">课程时间配置</h2>
+            <div class="bg-white rounded-lg shadow-lg border border-blue-100 p-6">
+                <h2 class="text-xl font-semibold text-primary mb-4">课程时间配置</h2>
                 <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">一天有几节课</label>
-                    <input type="number" id="classesPerDay" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary" placeholder="11" min="1" max="20" value="11">
+                    <label class="block text-sm font-medium text-blue-700 mb-2">一天有几节课</label>
+                    <input type="number" id="classesPerDay" class="w-full px-3 py-2 border border-blue-200 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary" placeholder="11" min="1" max="20" value="11">
                 </div>
                 <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">大节间休息时间（分钟）</label>
-                    <input type="number" id="breakDuration" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary" placeholder="15" min="0" max="60" value="15">
+                    <label class="block text-sm font-medium text-blue-700 mb-2">大节间休息时间（分钟）</label>
+                    <input type="number" id="breakDuration" class="w-full px-3 py-2 border border-blue-200 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary" placeholder="15" min="0" max="60" value="15">
                 </div>
                 <div>
-                    <h3 class="text-lg font-medium text-gray-900 mb-3">每节课开始时间</h3>
+                    <h3 class="text-lg font-medium text-primary mb-3">每节课开始时间</h3>
                     <div id="classTimes" class="space-y-2">
                         <!-- 动态生成的课程时间输入框 -->
                     </div>
-                    <button type="button" id="addClassTime" class="mt-3 px-4 py-2 bg-primary text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-primary">
-                        添加课程时间
+                    <button type="button" id="addClassTime" class="mt-3 px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 transition-colors font-medium">
+                        ⏰ 添加课程时间
                     </button>
                 </div>
             </div>
 
             <!-- 提醒设置 -->
-            <div class="bg-white rounded-lg shadow-md p-6">
-                <h2 class="text-xl font-semibold text-gray-900 mb-4">提醒设置</h2>
+            <div class="bg-white rounded-lg shadow-lg border border-blue-100 p-6">
+                <h2 class="text-xl font-semibold text-primary mb-4">提醒设置</h2>
                 <div class="space-y-3">
                     <div class="flex items-center">
                         <input type="checkbox" id="reminder1" class="mr-3" checked>
@@ -148,21 +157,45 @@
             </div>
 
             <!-- 课程信息 -->
-            <div class="bg-white rounded-lg shadow-md p-6">
-                <h2 class="text-xl font-semibold text-gray-900 mb-4">课程信息</h2>
+            <div class="bg-white rounded-lg shadow-lg border border-blue-100 p-6">
+                <h2 class="text-xl font-semibold text-primary mb-4">课程信息</h2>
                 <div id="coursesList" class="space-y-6">
                     <!-- 动态生成的课程输入表单 -->
                 </div>
-                <button type="button" id="addCourse" class="mt-4 px-4 py-2 bg-secondary text-white rounded-md hover:bg-purple-600 focus:outline-none focus:ring-2 focus:ring-secondary">
-                    添加课程
+                <button type="button" id="addCourse" class="mt-4 px-6 py-2 bg-secondary text-white rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-secondary focus:ring-offset-2 transition-colors font-medium">
+                    ➕ 添加课程
                 </button>
             </div>
 
             <!-- 生成和下载按钮 -->
-            <div class="text-center">
-                <button type="button" id="generateICS" class="px-8 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 text-lg font-medium">
-                    生成ICS文件
-                </button>
+            <div class="bg-white rounded-lg shadow-lg border border-blue-100 p-6">
+                <h2 class="text-xl font-semibold text-primary mb-4 text-center">导出课表</h2>
+                <div class="space-y-4">
+                    <!-- 生成ICS按钮 -->
+                    <div class="text-center">
+                        <button type="button" id="generateICS" class="w-full sm:w-auto px-8 py-3 bg-primary text-white rounded-lg hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 text-lg font-medium transition-colors">
+                            📅 生成ICS文件
+                        </button>
+                    </div>
+                    
+                    <!-- 一键导入功能 -->
+                    <div id="importSection" class="hidden">
+                        <div class="border-t border-blue-100 pt-4">
+                            <h3 class="text-lg font-medium text-primary mb-3 text-center">🍎 Apple设备一键导入</h3>
+                            <p class="text-sm text-blue-600 text-center mb-4">
+                                在iPhone、iPad或Mac上点击下方按钮可直接导入到日历应用
+                            </p>
+                            <div class="text-center space-y-2">
+                                <button type="button" id="importToCalendar" class="w-full sm:w-auto px-6 py-3 bg-secondary text-white rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-secondary focus:ring-offset-2 font-medium transition-colors">
+                                    📱 导入到Apple日历
+                                </button>
+                                <p class="text-xs text-blue-500">
+                                    适用于 iOS、iPadOS、macOS 系统
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
