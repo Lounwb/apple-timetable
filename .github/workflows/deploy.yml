@@ -11,7 +11,7 @@ permissions:
   pages: write
   id-token: write
 
-# 只允许一个并发部署，跳过正在进行的运行之间排队的运行
+# 只允许一个并发部署
 concurrency:
   group: "pages"
   cancel-in-progress: false
@@ -30,11 +30,22 @@ jobs:
     - name: Build
       run: |
         # 替换API Key占位符
-        sed -i "s/DASHSCOPE_API_KEY_PLACEHOLDER/${{ secrets.DASHSCOPE_API_KEY }}/g" script.js
+        if [ -n "${{ secrets.DASHSCOPE_API_KEY }}" ]; then
+          sed -i "s/DASHSCOPE_API_KEY_PLACEHOLDER/${{ secrets.DASHSCOPE_API_KEY }}/g" script.js
+          echo "✅ API Key replacement completed"
+        else
+          echo "❌ DASHSCOPE_API_KEY secret not found"
+          exit 1
+        fi
+        
+    - name: Setup Pages
+      uses: actions/configure-pages@v4
+      
+    - name: Upload artifact
+      uses: actions/upload-pages-artifact@v3
+      with:
+        path: '.'
         
     - name: Deploy to GitHub Pages
-      uses: peaceiris/actions-gh-pages@v3
-      if: github.ref == 'refs/heads/main'
-      with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: .
+      id: deployment
+      uses: actions/deploy-pages@v4
