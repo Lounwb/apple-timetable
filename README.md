@@ -10,14 +10,14 @@
 </p>
 
 <p>
-  <img src="https://img.shields.io/github/stars/your-username/apple-timetable?style=social" alt="GitHub Stars">
-  <img src="https://img.shields.io/github/forks/your-username/apple-timetable?style=social" alt="GitHub Forks">
-  <img src="https://img.shields.io/github/license/your-username/apple-timetable" alt="License">
+  <img src="https://img.shields.io/github/stars/lounwb/apple-timetable?style=social" alt="GitHub Stars">
+  <img src="https://img.shields.io/github/forks/lounwb/apple-timetable?style=social" alt="GitHub Forks">
+  <img src="https://img.shields.io/github/license/lounwb/apple-timetable" alt="License">
 </p>
 
 **一个现代化的网页工具，轻松将课表转换为ICS格式并导入到Apple日历中**
 
-[🚀 在线体验](https://your-username.github.io/apple-timetable) | [📖 使用指南](#使用方法) | [🛠️ 部署指南](DEPLOYMENT.md) | [🐛 问题反馈](https://github.com/your-username/apple-timetable/issues)
+[🚀 在线体验](https://lounwb.github.io/apple-timetable) | [📖 使用指南](#使用方法) | [🛠️ 部署指南](DEPLOYMENT.md) | [🐛 问题反馈](https://github.com/lounwb/apple-timetable/issues)
 
 </div>
 

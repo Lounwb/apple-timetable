@@ -2,7 +2,7 @@
   "version": 2,
   "functions": {
     "api/analyze-schedule.js": {
-      "runtime": "@vercel/node"
+      "runtime": "nodejs18.x"
     }
   },
   "headers": [
