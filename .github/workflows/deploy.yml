@@ -29,21 +29,31 @@ jobs:
       
     - name: Build
       run: |
+        echo "🔍 Current environment: ${{ github.environment }}"
+        echo "🔍 Job environment: github-pages"
+        
+        # 检查原始文件
+        echo "📄 Before replacement:"
+        grep -n "DASHSCOPE_API_KEY_PLACEHOLDER" script.js || echo "Placeholder not found"
+        
         # 替换API Key占位符
         if [ -n "${{ secrets.DASHSCOPE_API_KEY }}" ]; then
+          echo "✅ DASHSCOPE_API_KEY secret is available"
+          echo "🔑 Key starts with: $(echo '${{ secrets.DASHSCOPE_API_KEY }}' | cut -c1-3)"
           sed -i "s/DASHSCOPE_API_KEY_PLACEHOLDER/${{ secrets.DASHSCOPE_API_KEY }}/g" script.js
+          echo "✅ API Key replacement completed"
         else
-          echo "Warning: DASHSCOPE_API_KEY secret not found"
+          echo "❌ DASHSCOPE_API_KEY secret not found in github-pages environment"
+          echo "🔍 Available secrets context:"
+          echo "Secrets context exists: ${{ toJson(secrets) != '{}' }}"
+          exit 1
         fi
         
-    - name: Setup Pages
-      uses: actions/configure-pages@v4
-      
-    - name: Upload artifact
-      uses: actions/upload-pages-artifact@v3
-      with:
-        path: '.'
-        
-    - name: Deploy to GitHub Pages
-      id: deployment
-      uses: actions/deploy-pages@v4
+        # 检查替换结果
+        echo "📄 After replacement:"
+        if grep -q "DASHSCOPE_API_KEY_PLACEHOLDER" script.js; then
+          echo "❌ Placeholder still exists"
+          exit 1
+        else
+          echo "✅ Placeholder successfully replaced"
+        fi
