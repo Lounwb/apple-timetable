@@ -55,6 +55,9 @@ function setupEventListeners() {
     
     // 移动端优化
     optimizeMobileExperience();
+    
+    // 大学搜索功能
+    setupUniversitySearch();
 }
 
 // 更新课程时间数量
@@ -845,14 +848,11 @@ async function analyzeImage() {
         return;
     }
     
-    // 默认使用Qwen-VL-Max模型
-    const model = 'qwen-vl-max';
-    
     updateAIStatus('analyzing', 'AI正在分析课表图片，请稍候...');
     
     try {
-        // 直接调用Qwen API
-        const result = await callQwenAPI(model, uploadedImage);
+        // 调用代理API
+        const result = await callProxyAPI(uploadedImage);
         
         if (result.success) {
             parseAndFillData(result.data);
@@ -1057,8 +1057,41 @@ async function callDeepSeekAPI(apiKey, model, imageData) {
     }
 }
 
-// 调用Qwen API
-async function callQwenAPI(model, imageData) {
+// 调用代理API（安全方式）
+async function callProxyAPI(imageData) {
+    try {
+        // 检测当前域名，自动选择API端点
+        const apiUrl = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+            ? 'http://localhost:3000/api/analyze-schedule'  // 本地开发
+            : '/api/analyze-schedule';  // 生产环境（Vercel/Netlify）
+        
+        const response = await fetch(apiUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                image: imageData,
+                model: 'qwen-vl-max'
+            })
+        });
+        
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.error || `API请求失败: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        return data;
+        
+    } catch (error) {
+        console.error('代理API调用错误:', error);
+        throw error;
+    }
+}
+
+// 已弃用的Qwen API直接调用（保留作为参考）
+async function callQwenAPI_deprecated(model, imageData) {
     const prompt = `请分析这张课表图片，提取出所有课程信息，并按照以下JSON格式返回：
 
 {
@@ -1168,24 +1201,7 @@ async function callQwenAPI(model, imageData) {
     }
 }
 
-// 获取API Key（从GitHub Secrets或环境变量）
-async function getApiKey() {
-    // 在GitHub Pages环境中，API Key应该通过GitHub Actions注入
-    // 这里我们使用一个简单的配置方式
-    const config = {
-        // 这个值会在GitHub Actions构建时被替换
-        apiKey: 'DASHSCOPE_API_KEY_PLACEHOLDER'
-    };
-    
-    // 如果API Key还是占位符，说明没有正确配置
-    // 使用不同的占位符检查方式，避免被sed替换影响
-    if (!config.apiKey || config.apiKey.length < 10 || !config.apiKey.startsWith('sk-')) {
-        console.error('❌ API Key无效或未正确配置');
-        return null;
-    }
-    
-    return config.apiKey;
-}
+// API Key现在通过服务端代理安全处理，前端不再需要直接访问
 
 // 解析并填充数据
 function parseAndFillData(data) {
@@ -1388,4 +1404,213 @@ function importToAppleCalendar() {
         console.error('导入失败:', error);
         showErrorMessage('导入失败，请手动下载ICS文件。');
     }
+}
+
+// 设置大学搜索功能
+function setupUniversitySearch() {
+    const searchInput = document.getElementById('universitySearch');
+    const dropdown = document.getElementById('universityDropdown');
+    const selectedDiv = document.getElementById('selectedUniversity');
+    const selectedNameSpan = document.getElementById('selectedUniversityName');
+    const clearButton = document.getElementById('clearUniversity');
+    const hiddenInput = document.getElementById('schoolAddress');
+    
+    let selectedUniversity = null;
+    
+    // 获取所有大学名称
+    const universities = Object.keys(window.universitiesData || {});
+    
+    // 输入事件处理
+    searchInput.addEventListener('input', function() {
+        const query = this.value.trim().toLowerCase();
+        
+        if (query.length === 0) {
+            hideDropdown();
+            return;
+        }
+        
+        // 模糊搜索
+        const matches = universities.filter(name => 
+            name.toLowerCase().includes(query) ||
+            name.replace(/大学|学院|科技|理工|师范/g, '').toLowerCase().includes(query)
+        ).slice(0, 10); // 限制显示10个结果
+        
+        if (matches.length > 0) {
+            showDropdown(matches, query);
+        } else {
+            hideDropdown();
+        }
+    });
+    
+    // 焦点事件
+    searchInput.addEventListener('focus', function() {
+        if (this.value.trim().length > 0) {
+            const query = this.value.trim().toLowerCase();
+            const matches = universities.filter(name => 
+                name.toLowerCase().includes(query)
+            ).slice(0, 10);
+            
+            if (matches.length > 0) {
+                showDropdown(matches, query);
+            }
+        }
+    });
+    
+    // 点击外部关闭下拉框
+    document.addEventListener('click', function(e) {
+        if (!searchInput.contains(e.target) && !dropdown.contains(e.target)) {
+            hideDropdown();
+        }
+    });
+    
+    // 清除选择
+    clearButton.addEventListener('click', function() {
+        clearSelection();
+    });
+    
+    // 显示下拉框
+    function showDropdown(matches, query) {
+        dropdown.innerHTML = '';
+        
+        matches.forEach(name => {
+            const item = document.createElement('div');
+            item.className = 'px-3 py-2 hover:bg-blue-50 cursor-pointer border-b border-gray-100 last:border-b-0';
+            
+            // 高亮匹配的文字
+            const highlightedName = highlightMatch(name, query);
+            item.innerHTML = `
+                <div class="font-medium text-gray-900">${highlightedName}</div>
+                <div class="text-sm text-gray-500">${window.universitiesData[name].address}</div>
+            `;
+            
+            item.addEventListener('click', function() {
+                selectUniversity(name);
+            });
+            
+            dropdown.appendChild(item);
+        });
+        
+        dropdown.classList.remove('hidden');
+    }
+    
+    // 隐藏下拉框
+    function hideDropdown() {
+        dropdown.classList.add('hidden');
+    }
+    
+    // 高亮匹配文字
+    function highlightMatch(text, query) {
+        if (!query) return text;
+        
+        const regex = new RegExp(`(${escapeRegExp(query)})`, 'gi');
+        return text.replace(regex, '<span class="bg-yellow-200">$1</span>');
+    }
+    
+    // 转义正则表达式特殊字符
+    function escapeRegExp(string) {
+        return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    }
+    
+    // 选择大学
+    function selectUniversity(name) {
+        selectedUniversity = name;
+        const universityData = window.universitiesData[name];
+        
+        // 更新UI
+        searchInput.value = name;
+        selectedNameSpan.textContent = name;
+        selectedDiv.classList.remove('hidden');
+        hideDropdown();
+        
+        // 更新隐藏字段
+        hiddenInput.value = universityData.address;
+        
+        // 自动填充相关信息
+        autoFillUniversityData(universityData);
+        
+        showSuccessMessage(`已选择 ${name}，相关信息已自动填充！`);
+    }
+    
+    // 清除选择
+    function clearSelection() {
+        selectedUniversity = null;
+        searchInput.value = '';
+        selectedDiv.classList.add('hidden');
+        hiddenInput.value = '';
+        
+        // 清除自动填充的数据
+        document.getElementById('classesPerDay').value = 11;
+        clearClassTimes();
+        updateClassTimesCount();
+        
+        showSuccessMessage('已清除学校选择，请重新选择或手动输入信息。');
+    }
+    
+    // 自动填充大学数据
+    function autoFillUniversityData(universityData) {
+        // 填充课程数量
+        document.getElementById('classesPerDay').value = universityData.classesPerDay;
+        
+        // 清除并重新填充课程时间
+        clearClassTimes();
+        
+        // 更新课程时间
+        classTimes.length = 0;
+        universityData.classTimes.forEach(time => {
+            classTimes.push({
+                start: time.start,
+                end: time.end
+            });
+        });
+        
+        // 更新显示
+        updateClassTimesDisplay();
+    }
+    
+    // 清除课程时间
+    function clearClassTimes() {
+        const container = document.getElementById('classTimes');
+        container.innerHTML = '';
+        classTimes.length = 0;
+    }
+    
+    // 更新课程时间显示
+    function updateClassTimesDisplay() {
+        const container = document.getElementById('classTimes');
+        container.innerHTML = '';
+        
+        classTimes.forEach((time, index) => {
+            const timeDiv = document.createElement('div');
+            timeDiv.className = 'flex items-center space-x-2';
+            timeDiv.innerHTML = `
+                <span class="text-sm text-blue-600 w-12">第${index + 1}节</span>
+                <input type="time" value="${time.start}" onchange="updateClassTime(${index}, 'start', this.value)" 
+                       class="px-2 py-1 border border-blue-200 rounded text-sm focus:outline-none focus:ring-1 focus:ring-primary">
+                <span class="text-gray-500">-</span>
+                <input type="time" value="${time.end}" onchange="updateClassTime(${index}, 'end', this.value)" 
+                       class="px-2 py-1 border border-blue-200 rounded text-sm focus:outline-none focus:ring-1 focus:ring-primary">
+                <button type="button" onclick="removeClassTime(${index})" 
+                        class="px-2 py-1 bg-red-500 text-white rounded text-sm hover:bg-red-600 focus:outline-none">
+                    删除
+                </button>
+            `;
+            container.appendChild(timeDiv);
+        });
+    }
+}
+
+// 更新课程时间
+function updateClassTime(index, field, value) {
+    if (classTimes[index]) {
+        classTimes[index][field] = value;
+    }
+}
+
+// 移除课程时间
+function removeClassTime(index) {
+    classTimes.splice(index, 1);
+    updateClassTimesDisplay();
+    
+    // 更新课程数量
+    document.getElementById('classesPerDay').value = classTimes.length;
 }

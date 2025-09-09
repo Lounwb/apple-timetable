@@ -111,6 +111,20 @@
                 margin-bottom: 1rem;
             }
         }
+        
+        /* 大学搜索下拉框样式 */
+        #universityDropdown {
+            z-index: 1000;
+        }
+        
+        #universityDropdown .highlight {
+            background-color: #fef3c7;
+            font-weight: 600;
+        }
+        
+        #universityDropdown div:hover {
+            background-color: #dbeafe;
+        }
     </style>
 </head>
 <body class="bg-gradient-to-br from-blue-light to-white min-h-screen">
@@ -178,8 +192,21 @@
                 <h2 class="text-xl font-semibold text-primary mb-4">学期基本信息</h2>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-sm font-medium text-blue-700 mb-2">学校地址</label>
-                        <input type="text" id="schoolAddress" class="w-full px-3 py-2 border border-blue-200 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary" placeholder="例如：电子科技大学清水河校区">
+                        <label class="block text-sm font-medium text-blue-700 mb-2">选择学校</label>
+                        <div class="relative">
+                            <input type="text" id="universitySearch" class="w-full px-3 py-2 border border-blue-200 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary" placeholder="输入学校名称搜索..." autocomplete="off">
+                            <div id="universityDropdown" class="absolute z-10 w-full bg-white border border-blue-200 rounded-md shadow-lg max-h-60 overflow-y-auto hidden">
+                                <!-- 搜索结果将在这里显示 -->
+                            </div>
+                        </div>
+                        <input type="hidden" id="schoolAddress" value="">
+                        <div id="selectedUniversity" class="mt-2 text-sm text-blue-600 hidden">
+                            <span class="font-medium">已选择：</span>
+                            <span id="selectedUniversityName"></span>
+                            <button type="button" id="clearUniversity" class="ml-2 text-red-500 hover:text-red-700">
+                                ✕ 清除
+                            </button>
+                        </div>
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-blue-700 mb-2">学期第一天</label>
@@ -336,6 +363,7 @@
         </div>
     </footer>
 
+    <script src="universities-data.js"></script>
     <script src="script.js"></script>
 </body>
 </html>

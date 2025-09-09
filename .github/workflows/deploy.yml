@@ -29,14 +29,8 @@ jobs:
       
     - name: Build
       run: |
-        # 替换API Key占位符
-        if [ -n "${{ secrets.DASHSCOPE_API_KEY }}" ]; then
-          sed -i "s/DASHSCOPE_API_KEY_PLACEHOLDER/${{ secrets.DASHSCOPE_API_KEY }}/g" script.js
-          echo "✅ API Key replacement completed"
-        else
-          echo "❌ DASHSCOPE_API_KEY secret not found"
-          exit 1
-        fi
+        echo "✅ 构建完成 - 使用安全的API代理模式"
+        echo "🔒 API Key现在通过服务端代理安全处理，前端无法访问"
         
     - name: Setup Pages
       uses: actions/configure-pages@v4
