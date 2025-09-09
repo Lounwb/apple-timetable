@@ -25,6 +25,9 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // 设置默认值
     setDefaultValues();
+    
+    // 根据设备类型显示不同的按钮文本
+    updateButtonTextForDevice();
 });
 
 // 初始化课程时间
@@ -44,11 +47,8 @@ function setupEventListeners() {
     // 课程相关
     document.getElementById('addCourse').addEventListener('click', addCourse);
     
-    // 生成ICS
-    document.getElementById('generateICS').addEventListener('click', generateICS);
-    
-    // 一键导入到Apple日历
-    document.getElementById('importToCalendar').addEventListener('click', importToAppleCalendar);
+    // 生成并导入ICS
+    document.getElementById('generateAndImportICS').addEventListener('click', generateAndImportICS);
     
     // AI图片识别相关
     setupImageUploadListeners();
@@ -405,6 +405,68 @@ function generateICS() {
         showSuccessMessage('ICS文件生成成功！Apple设备用户可以使用一键导入功能。');
     } else {
         showSuccessMessage('ICS文件生成成功！请下载后导入到您的日历应用中。');
+    }
+}
+
+// 生成并导入ICS文件（合并后的函数）
+function generateAndImportICS() {
+    // 验证输入
+    if (!validateInputs()) {
+        return;
+    }
+    
+    const schoolAddress = document.getElementById('schoolAddress').value;
+    const semesterStartDate = document.getElementById('semesterStartDate').value;
+    const totalWeeks = parseInt(document.getElementById('totalWeeks').value);
+    
+    if (!schoolAddress || !semesterStartDate || !totalWeeks) {
+        showErrorMessage('请填写完整的学期基本信息！');
+        return;
+    }
+    
+    if (courses.length === 0) {
+        showErrorMessage('请至少添加一门课程！');
+        return;
+    }
+    
+    // 生成ICS内容
+    let icsContent = generateICSHeader();
+    
+    courses.forEach(course => {
+        course.timeSlots.forEach(timeSlot => {
+            icsContent += generateCourseEvent(course, timeSlot, schoolAddress, semesterStartDate, totalWeeks);
+        });
+    });
+    
+    icsContent += 'END:VCALENDAR';
+    
+    // 存储ICS内容
+    window.currentICSContent = icsContent;
+    
+    // 根据设备类型执行不同的操作
+    if (isAppleDevice()) {
+        // Apple设备：直接导入到日历
+        importToAppleCalendar();
+    } else {
+        // 其他设备：下载ICS文件
+        downloadICS(icsContent);
+        showSuccessMessage('ICS文件生成成功！请下载后导入到您的日历应用中。');
+    }
+}
+
+// 根据设备类型更新按钮文本
+function updateButtonTextForDevice() {
+    const appleTexts = document.querySelectorAll('.apple-device-text');
+    const otherTexts = document.querySelectorAll('.other-device-text');
+    
+    if (isAppleDevice()) {
+        // Apple设备：显示一键导入文本
+        appleTexts.forEach(el => el.classList.remove('hidden'));
+        otherTexts.forEach(el => el.classList.add('hidden'));
+    } else {
+        // 其他设备：显示生成ICS文本
+        appleTexts.forEach(el => el.classList.add('hidden'));
+        otherTexts.forEach(el => el.classList.remove('hidden'));
     }
 }
 

@@ -287,29 +287,15 @@
             <div class="bg-white rounded-lg shadow-lg border border-blue-100 p-6 ipad-full-width">
                 <h2 class="text-xl font-semibold text-primary mb-4 text-center">导出课表</h2>
                 <div class="space-y-4">
-                    <!-- 生成ICS按钮 -->
+                    <!-- 一键导入按钮 -->
                     <div class="text-center">
-                        <button type="button" id="generateICS" class="w-full sm:w-auto px-8 py-4 bg-primary text-white rounded-lg hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 text-lg font-medium transition-colors touch-target">
-                            📅 生成ICS文件
+                        <button type="button" id="generateAndImportICS" class="w-full sm:w-auto px-8 py-4 bg-primary text-white rounded-lg hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 text-lg font-medium transition-colors touch-target">
+                            <span class="apple-device-text hidden">📱 生成并导入到Apple日历</span>
+                            <span class="other-device-text">📅 生成ICS文件</span>
                         </button>
-                    </div>
-                    
-                    <!-- 一键导入功能 -->
-                    <div id="importSection" class="hidden">
-                        <div class="border-t border-blue-100 pt-4">
-                            <h3 class="text-lg font-medium text-primary mb-3 text-center">🍎 Apple设备一键导入</h3>
-                            <p class="text-sm text-blue-600 text-center mb-4">
-                                在iPhone、iPad或Mac上点击下方按钮可直接导入到日历应用
-                            </p>
-                            <div class="text-center space-y-2">
-                                <button type="button" id="importToCalendar" class="w-full sm:w-auto px-6 py-4 bg-secondary text-white rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-secondary focus:ring-offset-2 font-medium transition-colors touch-target">
-                                    📱 导入到Apple日历
-                                </button>
-                                <p class="text-xs text-blue-500">
-                                    适用于 iOS、iPadOS、macOS 系统
-                                </p>
-                            </div>
-                        </div>
+                        <p id="deviceHint" class="text-xs text-blue-500 mt-2 apple-device-text hidden">
+                            适用于 iPhone、iPad、Mac 设备
+                        </p>
                     </div>
                 </div>
             </div>
