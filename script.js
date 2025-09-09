@@ -52,6 +52,9 @@ function setupEventListeners() {
     
     // AI图片识别相关
     setupImageUploadListeners();
+    
+    // 移动端优化
+    optimizeMobileExperience();
 }
 
 // 更新课程时间数量
@@ -1245,6 +1248,94 @@ function parseAndFillData(data) {
 function isAppleDevice() {
     const userAgent = navigator.userAgent;
     return /iPad|iPhone|iPod|Macintosh/.test(userAgent);
+}
+
+// 检测设备类型
+function getDeviceType() {
+    const userAgent = navigator.userAgent;
+    if (/iPad/.test(userAgent)) return 'iPad';
+    if (/iPhone/.test(userAgent)) return 'iPhone';
+    if (/iPod/.test(userAgent)) return 'iPod';
+    if (/Macintosh/.test(userAgent)) return 'Mac';
+    return 'other';
+}
+
+// 检测是否为iPhone X以上机型（有刘海屏）
+function isIPhoneWithNotch() {
+    const userAgent = navigator.userAgent;
+    const isIPhone = /iPhone/.test(userAgent);
+    if (!isIPhone) return false;
+    
+    // 检测屏幕尺寸来判断是否为iPhone X以上机型
+    const screenHeight = screen.height;
+    const screenWidth = screen.width;
+    
+    // iPhone X系列的常见分辨率
+    const notchPhoneResolutions = [
+        { width: 375, height: 812 }, // iPhone X, XS, 11 Pro, 12 mini, 13 mini
+        { width: 414, height: 896 }, // iPhone XR, XS Max, 11, 11 Pro Max
+        { width: 390, height: 844 }, // iPhone 12, 12 Pro, 13, 13 Pro, 14
+        { width: 428, height: 926 }, // iPhone 12 Pro Max, 13 Pro Max, 14 Plus, 14 Pro Max
+        { width: 393, height: 852 }, // iPhone 14 Pro
+        { width: 430, height: 932 }  // iPhone 14 Pro Max
+    ];
+    
+    return notchPhoneResolutions.some(res => 
+        (screenWidth === res.width && screenHeight === res.height) ||
+        (screenWidth === res.height && screenHeight === res.width)
+    );
+}
+
+// 优化移动端体验
+function optimizeMobileExperience() {
+    const deviceType = getDeviceType();
+    
+    // 为iPhone X以上机型添加特殊样式
+    if (isIPhoneWithNotch()) {
+        document.body.classList.add('iphone-notch');
+        console.log('检测到iPhone X以上机型，已应用刘海屏适配');
+    }
+    
+    // iPad特殊优化
+    if (deviceType === 'iPad') {
+        document.body.classList.add('ipad-device');
+        console.log('检测到iPad设备，已应用平板优化');
+    }
+    
+    // iPhone特殊优化
+    if (deviceType === 'iPhone') {
+        document.body.classList.add('iphone-device');
+        console.log('检测到iPhone设备，已应用手机优化');
+    }
+    
+    // 禁用iOS Safari的双击缩放
+    if (isAppleDevice()) {
+        let lastTouchEnd = 0;
+        document.addEventListener('touchend', function (event) {
+            const now = (new Date()).getTime();
+            if (now - lastTouchEnd <= 300) {
+                event.preventDefault();
+            }
+            lastTouchEnd = now;
+        }, false);
+    }
+    
+    // 处理iOS输入框焦点问题
+    if (/iPhone|iPad|iPod/.test(navigator.userAgent)) {
+        document.addEventListener('focusin', function(e) {
+            if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
+                setTimeout(() => {
+                    e.target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }, 300);
+            }
+        });
+        
+        document.addEventListener('focusout', function(e) {
+            setTimeout(() => {
+                window.scrollTo(0, 0);
+            }, 100);
+        });
+    }
 }
 
 // 一键导入到Apple日历

@@ -2,7 +2,10 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="课表转ICS">
     <title>课表转ICS工具</title>
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <link rel="icon" type="image/x-icon" href="favicon.ico">
@@ -18,24 +21,110 @@
                         secondary: '#2196F3',
                         'blue-apple': '#007AFF',
                         'blue-light': '#F0F8FF',
+                    },
+                    spacing: {
+                        'safe-top': 'env(safe-area-inset-top)',
+                        'safe-bottom': 'env(safe-area-inset-bottom)',
+                        'safe-left': 'env(safe-area-inset-left)',
+                        'safe-right': 'env(safe-area-inset-right)',
                     }
                 }
             }
         }
     </script>
+    <style>
+        /* iOS安全区域适配 */
+        @supports (padding: max(0px)) {
+            .ios-safe {
+                padding-left: max(1rem, env(safe-area-inset-left));
+                padding-right: max(1rem, env(safe-area-inset-right));
+            }
+            .ios-safe-top {
+                padding-top: max(2rem, env(safe-area-inset-top));
+            }
+            .ios-safe-bottom {
+                padding-bottom: max(2rem, env(safe-area-inset-bottom));
+            }
+        }
+        
+        /* iPhone X以上机型优化 */
+        @media screen and (max-width: 768px) {
+            .mobile-optimized {
+                padding-left: max(1rem, env(safe-area-inset-left));
+                padding-right: max(1rem, env(safe-area-inset-right));
+            }
+            .mobile-header {
+                padding-top: max(1rem, calc(env(safe-area-inset-top) + 1rem));
+            }
+            .mobile-footer {
+                padding-bottom: max(2rem, calc(env(safe-area-inset-bottom) + 2rem));
+            }
+        }
+        
+        /* 特定iPhone X系列设备优化 */
+        @media screen and (device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3),
+               screen and (device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2),
+               screen and (device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 3),
+               screen and (device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3),
+               screen and (device-width: 428px) and (device-height: 926px) and (-webkit-device-pixel-ratio: 3) {
+            .ios-safe {
+                padding-left: max(1rem, env(safe-area-inset-left));
+                padding-right: max(1rem, env(safe-area-inset-right));
+            }
+        }
+        
+        /* iPad优化 */
+        @media screen and (min-width: 768px) and (max-width: 1024px) {
+            .ipad-optimized {
+                max-width: 90%;
+                margin: 0 auto;
+            }
+            .ipad-grid {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 2rem;
+            }
+            .ipad-full-width {
+                grid-column: 1 / -1;
+            }
+        }
+        
+        /* 触摸优化 */
+        @media (hover: none) and (pointer: coarse) {
+            .touch-target {
+                min-height: 44px;
+                min-width: 44px;
+            }
+            button, input, select, textarea {
+                font-size: 16px; /* 防止iOS缩放 */
+            }
+        }
+        
+        /* 横屏优化 */
+        @media screen and (orientation: landscape) and (max-height: 500px) {
+            .landscape-compact {
+                padding-top: 1rem;
+                padding-bottom: 1rem;
+            }
+            .landscape-title {
+                font-size: 1.5rem;
+                margin-bottom: 1rem;
+            }
+        }
+    </style>
 </head>
 <body class="bg-gradient-to-br from-blue-light to-white min-h-screen">
-    <div class="container mx-auto px-4 py-8 max-w-4xl">
+    <div class="container mx-auto mobile-optimized ipad-optimized ios-safe px-4 py-8 max-w-4xl ios-safe-top">
         <!-- 页面标题 -->
-        <div class="text-center mb-8">
-            <h1 class="text-3xl font-bold text-primary mb-2">课表转ICS工具</h1>
-            <p class="text-blue-600">将你的课表转换为ICS格式，轻松导入到苹果日历中</p>
+        <div class="text-center mb-8 mobile-header landscape-compact">
+            <h1 class="text-3xl md:text-4xl font-bold text-primary mb-2 landscape-title">课表转ICS工具</h1>
+            <p class="text-blue-600 text-sm md:text-base">将你的课表转换为ICS格式，轻松导入到苹果日历中</p>
         </div>
 
         <!-- 主要内容区域 -->
-        <div class="space-y-8">
+        <div class="space-y-8 ipad-grid">
             <!-- AI图片识别功能 -->
-            <div class="bg-white rounded-lg shadow-lg border border-blue-100 p-6">
+            <div class="bg-white rounded-lg shadow-lg border border-blue-100 p-6 ipad-full-width">
                 <h2 class="text-xl font-semibold text-primary mb-6 flex items-center">
                     <span class="mr-2">🤖</span>AI智能识别
                 </h2>
@@ -57,10 +146,10 @@
                             <div id="imagePreview" class="hidden">
                                 <img id="previewImg" class="max-w-full h-auto rounded-lg shadow-sm" alt="课表预览">
                                 <div class="mt-4 flex justify-center space-x-3">
-                                    <button type="button" id="analyzeImage" class="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 transition-colors font-medium">
+                                    <button type="button" id="analyzeImage" class="px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 transition-colors font-medium touch-target">
                                         🔍 开始识别
                                     </button>
-                                    <button type="button" id="removeImage" class="px-6 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors">
+                                    <button type="button" id="removeImage" class="px-6 py-3 bg-gray-500 text-white rounded-lg hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors touch-target">
                                         移除图片
                                     </button>
                                 </div>
@@ -123,7 +212,7 @@
                     <div id="classTimes" class="space-y-2">
                         <!-- 动态生成的课程时间输入框 -->
                     </div>
-                    <button type="button" id="addClassTime" class="mt-3 px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 transition-colors font-medium">
+                    <button type="button" id="addClassTime" class="mt-3 px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 transition-colors font-medium touch-target">
                         ⏰ 添加课程时间
                     </button>
                 </div>
@@ -157,23 +246,23 @@
             </div>
 
             <!-- 课程信息 -->
-            <div class="bg-white rounded-lg shadow-lg border border-blue-100 p-6">
+            <div class="bg-white rounded-lg shadow-lg border border-blue-100 p-6 ipad-full-width">
                 <h2 class="text-xl font-semibold text-primary mb-4">课程信息</h2>
                 <div id="coursesList" class="space-y-6">
                     <!-- 动态生成的课程输入表单 -->
                 </div>
-                <button type="button" id="addCourse" class="mt-4 px-6 py-2 bg-secondary text-white rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-secondary focus:ring-offset-2 transition-colors font-medium">
+                <button type="button" id="addCourse" class="mt-4 px-6 py-3 bg-secondary text-white rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-secondary focus:ring-offset-2 transition-colors font-medium touch-target">
                     ➕ 添加课程
                 </button>
             </div>
 
             <!-- 生成和下载按钮 -->
-            <div class="bg-white rounded-lg shadow-lg border border-blue-100 p-6">
+            <div class="bg-white rounded-lg shadow-lg border border-blue-100 p-6 ipad-full-width">
                 <h2 class="text-xl font-semibold text-primary mb-4 text-center">导出课表</h2>
                 <div class="space-y-4">
                     <!-- 生成ICS按钮 -->
                     <div class="text-center">
-                        <button type="button" id="generateICS" class="w-full sm:w-auto px-8 py-3 bg-primary text-white rounded-lg hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 text-lg font-medium transition-colors">
+                        <button type="button" id="generateICS" class="w-full sm:w-auto px-8 py-4 bg-primary text-white rounded-lg hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 text-lg font-medium transition-colors touch-target">
                             📅 生成ICS文件
                         </button>
                     </div>
@@ -186,7 +275,7 @@
                                 在iPhone、iPad或Mac上点击下方按钮可直接导入到日历应用
                             </p>
                             <div class="text-center space-y-2">
-                                <button type="button" id="importToCalendar" class="w-full sm:w-auto px-6 py-3 bg-secondary text-white rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-secondary focus:ring-offset-2 font-medium transition-colors">
+                                <button type="button" id="importToCalendar" class="w-full sm:w-auto px-6 py-4 bg-secondary text-white rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-secondary focus:ring-offset-2 font-medium transition-colors touch-target">
                                     📱 导入到Apple日历
                                 </button>
                                 <p class="text-xs text-blue-500">
@@ -201,8 +290,8 @@
     </div>
 
     <!-- Footer -->
-    <footer class="bg-gray-800 text-white py-8 mt-16">
-        <div class="container mx-auto px-4 max-w-4xl">
+    <footer class="bg-gray-800 text-white py-8 mt-16 mobile-footer ios-safe-bottom">
+        <div class="container mx-auto mobile-optimized px-4 max-w-4xl">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
                 <!-- 关于工具 -->
                 <div>
