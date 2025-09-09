@@ -1161,7 +1161,9 @@ async function getApiKey() {
     };
     
     // 如果API Key还是占位符，说明没有正确配置
-    if (config.apiKey === 'DASHSCOPE_API_KEY_PLACEHOLDER') {
+    // 使用不同的占位符检查方式，避免被sed替换影响
+    if (!config.apiKey || config.apiKey.length < 10 || !config.apiKey.startsWith('sk-')) {
+        console.error('❌ API Key无效或未正确配置');
         return null;
     }
     
