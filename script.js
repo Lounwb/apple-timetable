@@ -1536,7 +1536,7 @@ function setupUniversitySearch() {
         
         matches.forEach(name => {
             const item = document.createElement('div');
-            item.className = 'px-3 py-2 hover:bg-blue-50 cursor-pointer border-b border-gray-100 last:border-b-0';
+            item.className = 'px-3 py-2 hover:bg-blue-50 cursor-pointer border-b border-gray-100';
             
             // 高亮匹配的文字
             const highlightedName = highlightMatch(name, query);
@@ -1552,6 +1552,19 @@ function setupUniversitySearch() {
             dropdown.appendChild(item);
         });
         
+        // 添加"其他学校"选项
+        const otherItem = document.createElement('div');
+        otherItem.className = 'px-3 py-2 hover:bg-gray-50 cursor-pointer border-t-2 border-blue-200 bg-gray-50';
+        otherItem.innerHTML = `
+            <div class="font-medium text-gray-700">📝 其他学校</div>
+            <div class="text-sm text-gray-500">手动输入学校信息</div>
+        `;
+        
+        otherItem.addEventListener('click', function() {
+            selectOtherSchool();
+        });
+        
+        dropdown.appendChild(otherItem);
         dropdown.classList.remove('hidden');
     }
     
@@ -1584,8 +1597,14 @@ function setupUniversitySearch() {
         selectedDiv.classList.remove('hidden');
         hideDropdown();
         
-        // 更新隐藏字段
-        hiddenInput.value = universityData.address;
+        // 更新学校地址字段
+        const addressInput = document.getElementById('schoolAddress');
+        addressInput.value = universityData.address;
+        
+        // 禁用手动输入（因为已自动填充）
+        addressInput.disabled = true;
+        addressInput.style.backgroundColor = '#f3f4f6';
+        addressInput.title = '已自动填充，如需修改请先清除学校选择';
         
         // 自动填充相关信息
         autoFillUniversityData(universityData);
@@ -1593,17 +1612,55 @@ function setupUniversitySearch() {
         showSuccessMessage(`已选择 ${name}，相关信息已自动填充！`);
     }
     
+    // 选择其他学校
+    function selectOtherSchool() {
+        selectedUniversity = null;
+        
+        // 更新UI
+        searchInput.value = '其他学校';
+        selectedNameSpan.textContent = '其他学校（手动输入）';
+        selectedDiv.classList.remove('hidden');
+        hideDropdown();
+        
+        // 清除自动填充的数据，恢复默认值
+        document.getElementById('classesPerDay').value = '11';
+        
+        // 重新初始化默认课程时间
+        classTimes = [...defaultClassTimes];
+        updateClassTimesDisplay();
+        
+        // 启用手动输入的地址框并聚焦
+        const addressInput = document.getElementById('schoolAddress');
+        addressInput.disabled = false;
+        addressInput.style.backgroundColor = '';
+        addressInput.title = '';
+        addressInput.value = '';
+        addressInput.focus();
+        addressInput.placeholder = '请输入完整的学校地址，如：某某大学某某校区';
+        
+        showSuccessMessage('请手动输入学校地址和配置课程时间！');
+    }
+    
     // 清除选择
     function clearSelection() {
         selectedUniversity = null;
         searchInput.value = '';
         selectedDiv.classList.add('hidden');
-        hiddenInput.value = '';
         
-        // 清除自动填充的数据
+        // 恢复地址输入框状态
+        const addressInput = document.getElementById('schoolAddress');
+        addressInput.value = '';
+        addressInput.disabled = false;
+        addressInput.style.backgroundColor = '';
+        addressInput.title = '';
+        addressInput.placeholder = '例如：北京大学燕园校区';
+        
+        // 清除自动填充的数据，恢复默认值
         document.getElementById('classesPerDay').value = 11;
-        clearClassTimes();
-        updateClassTimesCount();
+        
+        // 重新初始化默认课程时间
+        classTimes = [...defaultClassTimes];
+        updateClassTimesDisplay();
         
         showSuccessMessage('已清除学校选择，请重新选择或手动输入信息。');
     }
