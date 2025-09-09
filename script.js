@@ -1,6 +1,7 @@
 // 全局变量
 let courses = [];
 let classTimes = [];
+let uploadedImage = null;
 
 // 默认课程时间配置
 const defaultClassTimes = [
@@ -45,6 +46,9 @@ function setupEventListeners() {
     
     // 生成ICS
     document.getElementById('generateICS').addEventListener('click', generateICS);
+    
+    // AI图片识别相关
+    setupImageUploadListeners();
 }
 
 // 更新课程时间数量
@@ -589,4 +593,634 @@ function showToast(message, bgColor) {
             }
         }, 300);
     }, 3000);
+}
+
+// ==================== AI图片识别功能 ====================
+
+// 设置图片上传监听器
+function setupImageUploadListeners() {
+    const dropZone = document.getElementById('dropZone');
+    const imageUpload = document.getElementById('imageUpload');
+    const analyzeButton = document.getElementById('analyzeImage');
+    const removeButton = document.getElementById('removeImage');
+    
+    // 点击上传 - 只在占位符区域点击时触发
+    const uploadPlaceholder = document.getElementById('uploadPlaceholder');
+    uploadPlaceholder.addEventListener('click', (e) => {
+        e.stopPropagation();
+        imageUpload.click();
+    });
+    
+    // 文件选择
+    imageUpload.addEventListener('change', handleFileSelect);
+    
+    // 拖拽上传
+    dropZone.addEventListener('dragover', handleDragOver);
+    dropZone.addEventListener('drop', handleDrop);
+    
+    // 分析图片
+    analyzeButton.addEventListener('click', (e) => {
+        e.stopPropagation();
+        analyzeImage();
+    });
+    
+    // 移除图片
+    removeButton.addEventListener('click', (e) => {
+        e.stopPropagation();
+        removeImage();
+    });
+}
+
+// 处理文件选择
+function handleFileSelect(event) {
+    const file = event.target.files[0];
+    if (file) {
+        processImageFile(file);
+    }
+}
+
+// 处理拖拽悬停
+function handleDragOver(event) {
+    event.preventDefault();
+    event.currentTarget.classList.add('border-primary', 'bg-blue-50');
+}
+
+// 处理拖拽放置
+function handleDrop(event) {
+    event.preventDefault();
+    event.currentTarget.classList.remove('border-primary', 'bg-blue-50');
+    
+    const files = event.dataTransfer.files;
+    if (files.length > 0) {
+        processImageFile(files[0]);
+    }
+}
+
+// 处理图片文件
+function processImageFile(file) {
+    if (!file.type.startsWith('image/')) {
+        showErrorMessage('请选择图片文件！');
+        return;
+    }
+    
+    if (file.size > 10 * 1024 * 1024) { // 10MB限制
+        showErrorMessage('图片文件过大，请选择小于10MB的图片！');
+        return;
+    }
+    
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        uploadedImage = e.target.result;
+        showImagePreview(uploadedImage);
+    };
+    reader.readAsDataURL(file);
+}
+
+// 显示图片预览
+function showImagePreview(imageData) {
+    const placeholder = document.getElementById('uploadPlaceholder');
+    const preview = document.getElementById('imagePreview');
+    const previewImg = document.getElementById('previewImg');
+    
+    // 隐藏占位符，显示图片预览
+    placeholder.classList.add('hidden');
+    previewImg.src = imageData;
+    preview.classList.remove('hidden');
+    
+    updateAIStatus('ready', '图片已上传，点击"开始识别"按钮进行AI分析');
+}
+
+// 移除图片
+function removeImage() {
+    uploadedImage = null;
+    const placeholder = document.getElementById('uploadPlaceholder');
+    const preview = document.getElementById('imagePreview');
+    
+    // 显示占位符，隐藏图片预览
+    placeholder.classList.remove('hidden');
+    preview.classList.add('hidden');
+    document.getElementById('imageUpload').value = '';
+    updateAIStatus('idle', '请上传课表图片开始AI识别');
+}
+
+// 更新AI状态显示
+function updateAIStatus(status, message) {
+    const statusDiv = document.getElementById('aiStatus');
+    
+    switch (status) {
+        case 'idle':
+            statusDiv.innerHTML = `
+                <div class="text-center text-gray-500">
+                    <svg class="mx-auto h-12 w-12 text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <p class="text-sm">${message}</p>
+                </div>
+            `;
+            break;
+        case 'ready':
+            statusDiv.innerHTML = `
+                <div class="text-center text-blue-600">
+                    <svg class="mx-auto h-12 w-12 text-blue-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                    </svg>
+                    <p class="text-sm">${message}</p>
+                </div>
+            `;
+            break;
+        case 'analyzing':
+            statusDiv.innerHTML = `
+                <div class="text-center text-blue-600">
+                    <div class="mx-auto h-12 w-12 mb-2">
+                        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+                    </div>
+                    <p class="text-sm">${message}</p>
+                </div>
+            `;
+            break;
+        case 'success':
+            statusDiv.innerHTML = `
+                <div class="text-center text-green-600">
+                    <svg class="mx-auto h-12 w-12 text-green-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                    <p class="text-sm">${message}</p>
+                </div>
+            `;
+            break;
+        case 'error':
+            statusDiv.innerHTML = `
+                <div class="text-center text-red-600">
+                    <svg class="mx-auto h-12 w-12 text-red-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                    <p class="text-sm">${message}</p>
+                </div>
+            `;
+            break;
+    }
+}
+
+// 更新模型选项
+function updateModelOptions() {
+    const selectedProvider = document.querySelector('input[name="apiProvider"]:checked').value;
+    const modelSelect = document.getElementById('modelSelect');
+    const apiKeyInput = document.getElementById('apiKey');
+    
+    // 清空现有选项
+    modelSelect.innerHTML = '';
+    
+    if (selectedProvider === 'openai') {
+        // OpenAI模型选项
+        const openaiModels = [
+            { value: 'gpt-4o', text: 'GPT-4o (推荐)' },
+            { value: 'gpt-4o-mini', text: 'GPT-4o Mini (经济)' },
+            { value: 'gpt-4-turbo', text: 'GPT-4 Turbo' }
+        ];
+        
+        openaiModels.forEach(model => {
+            const option = document.createElement('option');
+            option.value = model.value;
+            option.textContent = model.text;
+            modelSelect.appendChild(option);
+        });
+        
+        apiKeyInput.placeholder = 'sk-...';
+    } else if (selectedProvider === 'deepseek') {
+        // DeepSeek模型选项
+        const deepseekModels = [
+            { value: 'deepseek-vl', text: 'DeepSeek-VL (推荐)' },
+            { value: 'deepseek-chat', text: 'DeepSeek-Chat' }
+        ];
+        
+        deepseekModels.forEach(model => {
+            const option = document.createElement('option');
+            option.value = model.value;
+            option.textContent = model.text;
+            modelSelect.appendChild(option);
+        });
+        
+        apiKeyInput.placeholder = 'sk-...';
+    } else if (selectedProvider === 'qwen') {
+        // Qwen模型选项
+        const qwenModels = [
+            { value: 'qwen-vl-max', text: 'Qwen-VL-Max (推荐)' },
+            { value: 'qwen-vl-plus', text: 'Qwen-VL-Plus' },
+            { value: 'qwen-max', text: 'Qwen-Max' }
+        ];
+        
+        qwenModels.forEach(model => {
+            const option = document.createElement('option');
+            option.value = model.value;
+            option.textContent = model.text;
+            modelSelect.appendChild(option);
+        });
+        
+        apiKeyInput.placeholder = 'sk-...';
+    }
+}
+
+// 分析图片
+async function analyzeImage() {
+    if (!uploadedImage) {
+        showErrorMessage('请先上传图片！');
+        return;
+    }
+    
+    // 默认使用Qwen-VL-Max模型
+    const model = 'qwen-vl-max';
+    
+    updateAIStatus('analyzing', 'AI正在分析课表图片，请稍候...');
+    
+    try {
+        // 直接调用Qwen API
+        const result = await callQwenAPI(model, uploadedImage);
+        
+        if (result.success) {
+            parseAndFillData(result.data);
+            updateAIStatus('success', '识别完成！数据已自动填充到表单中，请检查并调整。');
+            showSuccessMessage('AI识别完成！请检查并调整识别结果。');
+        } else {
+            throw new Error(result.error || '识别失败');
+        }
+    } catch (error) {
+        console.error('AI识别错误:', error);
+        updateAIStatus('error', `识别失败：${error.message}`);
+        showErrorMessage(`AI识别失败：${error.message}`);
+    }
+}
+
+// 调用OpenAI API
+async function callOpenAIAPI(apiKey, model, imageData) {
+    const prompt = `请分析这张课表图片，提取出所有课程信息，并按照以下JSON格式返回：
+
+{
+  "courses": [
+    {
+      "name": "课程名称",
+      "teacher": "教师姓名",
+      "timeSlots": [
+        {
+          "location": "上课地点",
+          "startWeek": 1,
+          "endWeek": 16,
+          "dayOfWeek": 1,
+          "startClass": 1,
+          "endClass": 2
+        }
+      ]
+    }
+  ]
+}
+
+注意：
+1. dayOfWeek: 1=星期一, 2=星期二, ..., 7=星期日
+2. startClass和endClass: 第几节课（从1开始）
+3. 如果同一门课程在不同周次有不同安排，请为每个时间段创建单独的timeSlot
+4. 请仔细识别所有课程信息，包括课程名称、教师、地点、时间等
+5. 只返回JSON格式，不要包含其他文字
+6. 不要提取学期信息或课程时间配置，这些需要用户手动输入`;
+
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${apiKey}`
+        },
+        body: JSON.stringify({
+            model: model,
+            messages: [
+                {
+                    role: 'user',
+                    content: [
+                        {
+                            type: 'text',
+                            text: prompt
+                        },
+                        {
+                            type: 'image_url',
+                            image_url: {
+                                url: imageData
+                            }
+                        }
+                    ]
+                }
+            ],
+            max_tokens: 4000,
+            temperature: 0.1
+        })
+    });
+    
+    if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error?.message || `API请求失败: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    const content = data.choices[0].message.content;
+    
+    try {
+        // 尝试提取JSON
+        const jsonMatch = content.match(/\{[\s\S]*\}/);
+        if (!jsonMatch) {
+            throw new Error('无法从响应中提取JSON数据');
+        }
+        
+        const jsonData = JSON.parse(jsonMatch[0]);
+        return { success: true, data: jsonData };
+    } catch (parseError) {
+        throw new Error('AI返回的数据格式不正确，请重试');
+    }
+}
+
+// 调用DeepSeek API
+async function callDeepSeekAPI(apiKey, model, imageData) {
+    const prompt = `请分析这张课表图片，提取出所有课程信息，并按照以下JSON格式返回：
+
+{
+  "courses": [
+    {
+      "name": "课程名称",
+      "teacher": "教师姓名",
+      "timeSlots": [
+        {
+          "location": "上课地点",
+          "startWeek": 1,
+          "endWeek": 16,
+          "dayOfWeek": 1,
+          "startClass": 1,
+          "endClass": 2
+        }
+      ]
+    }
+  ]
+}
+
+注意：
+1. dayOfWeek: 1=星期一, 2=星期二, ..., 7=星期日
+2. startClass和endClass: 第几节课（从1开始）
+3. 如果同一门课程在不同周次有不同安排，请为每个时间段创建单独的timeSlot
+4. 请仔细识别所有课程信息，包括课程名称、教师、地点、时间等
+5. 只返回JSON格式，不要包含其他文字
+6. 不要提取学期信息或课程时间配置，这些需要用户手动输入`;
+
+    // 根据模型选择不同的API端点
+    let apiUrl, requestBody;
+    
+    if (model === 'deepseek-vl') {
+        // DeepSeek-VL API
+        apiUrl = 'https://api.deepseek.com/v1/chat/completions';
+        requestBody = {
+            model: 'deepseek-vl',
+            messages: [
+                {
+                    role: 'user',
+                    content: [
+                        {
+                            type: 'text',
+                            text: prompt
+                        },
+                        {
+                            type: 'image_url',
+                            image_url: {
+                                url: imageData
+                            }
+                        }
+                    ]
+                }
+            ],
+            max_tokens: 4000,
+            temperature: 0.1
+        };
+    } else {
+        // DeepSeek-Chat API (不支持图片，需要先转换)
+        apiUrl = 'https://api.deepseek.com/v1/chat/completions';
+        requestBody = {
+            model: 'deepseek-chat',
+            messages: [
+                {
+                    role: 'user',
+                    content: prompt + '\n\n注意：由于当前模型不支持图片识别，请根据常见的课表格式进行推断。'
+                }
+            ],
+            max_tokens: 4000,
+            temperature: 0.1
+        };
+    }
+
+    const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${apiKey}`
+        },
+        body: JSON.stringify(requestBody)
+    });
+    
+    if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error?.message || `API请求失败: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    const content = data.choices[0].message.content;
+    
+    try {
+        // 尝试提取JSON
+        const jsonMatch = content.match(/\{[\s\S]*\}/);
+        if (!jsonMatch) {
+            throw new Error('无法从响应中提取JSON数据');
+        }
+        
+        const jsonData = JSON.parse(jsonMatch[0]);
+        return { success: true, data: jsonData };
+    } catch (parseError) {
+        throw new Error('AI返回的数据格式不正确，请重试');
+    }
+}
+
+// 调用Qwen API
+async function callQwenAPI(model, imageData) {
+    const prompt = `请分析这张课表图片，提取出所有课程信息，并按照以下JSON格式返回：
+
+{
+  "courses": [
+    {
+      "name": "课程名称",
+      "teacher": "教师姓名",
+      "timeSlots": [
+        {
+          "location": "上课地点",
+          "startWeek": 1,
+          "endWeek": 16,
+          "dayOfWeek": 1,
+          "startClass": 1,
+          "endClass": 2
+        }
+      ]
+    }
+  ]
+}
+
+注意：
+1. dayOfWeek: 1=星期一, 2=星期二, ..., 7=星期日
+2. startClass和endClass: 第几节课（从1开始）
+3. 如果同一门课程在不同周次有不同安排，请为每个时间段创建单独的timeSlot
+4. 请仔细识别所有课程信息，包括课程名称、教师、地点、时间等
+5. 只返回JSON格式，不要包含其他文字`;
+
+    // 使用兼容模式的API端点
+    const apiUrl = 'https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions';
+    
+    // 从GitHub Secrets获取API Key
+    const apiKey = await getApiKey();
+    if (!apiKey) {
+        throw new Error('无法获取API Key，请检查GitHub Secrets配置');
+    }
+    
+    let requestBody;
+    
+    if (model.startsWith('qwen-vl')) {
+        // Qwen-VL模型支持图片
+        requestBody = {
+            model: model,
+            messages: [
+                {
+                    role: 'user',
+                    content: [
+                        {
+                            type: 'image_url',
+                            image_url: {
+                                url: imageData
+                            }
+                        },
+                        {
+                            type: 'text',
+                            text: prompt
+                        }
+                    ]
+                }
+            ],
+            max_tokens: 4000,
+            temperature: 0.1
+        };
+    } else {
+        // Qwen-Max等文本模型
+        requestBody = {
+            model: model,
+            messages: [
+                {
+                    role: 'user',
+                    content: prompt + '\n\n注意：由于当前模型不支持图片识别，请根据常见的课表格式进行推断。'
+                }
+            ],
+            max_tokens: 4000,
+            temperature: 0.1
+        };
+    }
+
+    const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${apiKey}`
+        },
+        body: JSON.stringify(requestBody)
+    });
+    
+    if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error?.message || errorData.message || `API请求失败: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    const content = data.choices[0].message.content;
+    
+    try {
+        // 尝试提取JSON
+        const jsonMatch = content.match(/\{[\s\S]*\}/);
+        if (!jsonMatch) {
+            throw new Error('无法从响应中提取JSON数据');
+        }
+        
+        const jsonData = JSON.parse(jsonMatch[0]);
+        return { success: true, data: jsonData };
+    } catch (parseError) {
+        throw new Error('AI返回的数据格式不正确，请重试');
+    }
+}
+
+// 获取API Key（从GitHub Secrets或环境变量）
+async function getApiKey() {
+    // 在GitHub Pages环境中，API Key应该通过GitHub Actions注入
+    // 这里我们使用一个简单的配置方式
+    const config = {
+        // 这个值会在GitHub Actions构建时被替换
+        apiKey: 'DASHSCOPE_API_KEY_PLACEHOLDER'
+    };
+    
+    // 如果API Key还是占位符，说明没有正确配置
+    if (config.apiKey === 'DASHSCOPE_API_KEY_PLACEHOLDER') {
+        return null;
+    }
+    
+    return config.apiKey;
+}
+
+// 解析并填充数据
+function parseAndFillData(data) {
+    try {
+        // 清空现有课程
+        courses = [];
+        
+        // 填充课程信息
+        if (data.courses && data.courses.length > 0) {
+            data.courses.forEach(courseData => {
+                const course = {
+                    id: Date.now() + Math.random(),
+                    name: courseData.name || '',
+                    teacher: courseData.teacher || '',
+                    timeSlots: []
+                };
+                
+                if (courseData.timeSlots && courseData.timeSlots.length > 0) {
+                    courseData.timeSlots.forEach(timeSlotData => {
+                        course.timeSlots.push({
+                            id: Date.now() + Math.random(),
+                            location: timeSlotData.location || '',
+                            startWeek: timeSlotData.startWeek || 1,
+                            endWeek: timeSlotData.endWeek || 16,
+                            dayOfWeek: timeSlotData.dayOfWeek || 1,
+                            startClass: timeSlotData.startClass || 1,
+                            endClass: timeSlotData.endClass || 2
+                        });
+                    });
+                } else {
+                    // 如果没有时间段，创建一个默认的
+                    course.timeSlots.push({
+                        id: Date.now() + Math.random(),
+                        location: '',
+                        startWeek: 1,
+                        endWeek: 16,
+                        dayOfWeek: 1,
+                        startClass: 1,
+                        endClass: 2
+                    });
+                }
+                
+                courses.push(course);
+            });
+        }
+        
+        // 更新显示
+        updateCoursesDisplay();
+        
+        // 滚动到课程信息区域
+        document.getElementById('coursesList').scrollIntoView({ behavior: 'smooth' });
+        
+    } catch (error) {
+        console.error('数据解析错误:', error);
+        throw new Error('数据解析失败，请检查AI返回的数据格式');
+    }
 }

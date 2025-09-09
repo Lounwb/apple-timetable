@@ -30,6 +30,51 @@
 
         <!-- 主要内容区域 -->
         <div class="space-y-8">
+            <!-- AI图片识别功能 -->
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h2 class="text-xl font-semibold text-gray-900 mb-4">🤖 AI智能识别</h2>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <!-- 图片上传区域 -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">上传课表图片</label>
+                        <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-primary transition-colors relative" id="dropZone">
+                            <input type="file" id="imageUpload" accept="image/*" class="hidden">
+                            <div id="uploadPlaceholder" class="space-y-2">
+                                <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+                                    <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                </svg>
+                                <p class="text-sm text-gray-600">点击或拖拽上传课表图片</p>
+                                <p class="text-xs text-gray-500">支持 JPG、PNG、GIF 格式</p>
+                            </div>
+                            <div id="imagePreview" class="hidden">
+                                <img id="previewImg" class="max-w-full h-auto rounded-lg shadow-sm" alt="课表预览">
+                                <div class="mt-2 flex space-x-2">
+                                    <button type="button" id="analyzeImage" class="px-4 py-2 bg-primary text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-primary">
+                                        🔍 开始识别
+                                    </button>
+                                    <button type="button" id="removeImage" class="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500">
+                                        移除图片
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- AI识别状态 -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">识别状态</label>
+                        <div id="aiStatus" class="bg-gray-50 rounded-lg p-4 min-h-[200px] flex items-center justify-center">
+                            <div class="text-center text-gray-500">
+                                <svg class="mx-auto h-12 w-12 text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                <p class="text-sm">请上传课表图片开始AI识别</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- 学期基本信息 -->
             <div class="bg-white rounded-lg shadow-md p-6">
                 <h2 class="text-xl font-semibold text-gray-900 mb-4">学期基本信息</h2>
