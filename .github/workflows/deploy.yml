@@ -28,9 +28,28 @@ jobs:
       uses: actions/checkout@v4
       
     - name: Build
+      env:
+        DASHSCOPE_API_KEY: ${{ secrets.DASHSCOPE_API_KEY }}
       run: |
-        echo "✅ 构建完成 - 使用安全的API代理模式"
-        echo "🔒 API Key现在通过服务端代理安全处理，前端无法访问"
+        echo "🔍 当前环境: github-pages"
+        
+        # 检查API Key是否存在
+        if [ -z "$DASHSCOPE_API_KEY" ]; then
+          echo "❌ DASHSCOPE_API_KEY secret未配置"
+          exit 1
+        else
+          echo "✅ DASHSCOPE_API_KEY secret已配置"
+          echo "🔑 Key开头: $(echo "$DASHSCOPE_API_KEY" | cut -c1-3)..."
+        fi
+        
+        # 注入API Key到JavaScript文件
+        echo "🔄 注入API Key到前端代码..."
+        sed -i "s/DASHSCOPE_API_KEY_PLACEHOLDER/$DASHSCOPE_API_KEY/g" script.js
+        
+        # 验证替换结果
+        echo "✅ API Key注入完成"
+        echo "📄 验证替换结果:"
+        grep -n "apiKey:" script.js | head -1
         
     - name: Setup Pages
       uses: actions/configure-pages@v4

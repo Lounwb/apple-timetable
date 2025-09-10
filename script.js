@@ -1119,58 +1119,159 @@ async function callDeepSeekAPI(apiKey, model, imageData) {
     }
 }
 
-// 调用代理API（安全方式）
+// 调用代理API（智能选择方式）
 async function callProxyAPI(imageData) {
     try {
-        // 检测当前域名，自动选择API端点
-        let apiUrl;
-        
-        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-            // 本地开发环境
-            apiUrl = 'http://localhost:3000/api/analyze-schedule';
-        } else if (window.location.hostname.includes('github.io')) {
-            // GitHub Pages - 调用Vercel部署的API
-            // 你可能需要根据实际的Vercel域名调整这个URL
-            apiUrl = 'https://apple-timetable-lounwb.vercel.app/api/analyze-schedule';
+        if (window.location.hostname.includes('github.io')) {
+            // GitHub Pages - 直接调用AI API
+            console.log('GitHub Pages环境，直接调用AI API');
+            return await callQwenAPIDirect(imageData);
+        } else if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+            // 本地开发环境 - 使用代理
+            console.log('本地开发环境，使用代理API');
+            return await callVercelProxy(imageData, 'http://localhost:3000/api/analyze-schedule');
         } else {
-            // Vercel或其他支持Serverless的平台
-            apiUrl = '/api/analyze-schedule';
+            // Vercel或其他支持Serverless的平台 - 使用代理
+            console.log('Vercel环境，使用Serverless函数');
+            return await callVercelProxy(imageData, '/api/analyze-schedule');
         }
-        
-        console.log('调用API端点:', apiUrl);
-        
-        const response = await fetch(apiUrl, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                image: imageData,
-                model: 'qwen-vl-max'
-            })
-        });
-        
-        console.log('API响应状态:', response.status, response.statusText);
-        
-        if (!response.ok) {
-            const errorData = await response.json().catch(() => ({}));
-            console.error('API错误响应:', errorData);
-            
-            if (response.status === 405) {
-                throw new Error('API端点不可用，请确认Vercel部署状态或联系开发者');
-            }
-            
-            throw new Error(errorData.error || `API请求失败: ${response.status} ${response.statusText}`);
-        }
-        
-        const data = await response.json();
-        console.log('API成功响应');
-        return data;
-        
     } catch (error) {
-        console.error('代理API调用错误:', error);
+        console.error('API调用错误:', error);
         throw error;
     }
+}
+
+// Vercel代理调用
+async function callVercelProxy(imageData, apiUrl) {
+    const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            image: imageData,
+            model: 'qwen-vl-max'
+        })
+    });
+    
+    if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        console.error('代理API错误响应:', errorData);
+        throw new Error(errorData.error || `代理API请求失败: ${response.status} ${response.statusText}`);
+    }
+    
+    return await response.json();
+}
+
+// 直接调用Qwen API（用于GitHub Pages）
+async function callQwenAPIDirect(imageData) {
+    // 获取API Key（从GitHub Actions注入的环境变量）
+    const apiKey = getApiKey();
+    if (!apiKey) {
+        throw new Error('API Key未配置，请联系管理员');
+    }
+    
+    const requestBody = {
+        model: 'qwen-vl-max',
+        messages: [{
+            role: 'user',
+            content: [
+                {
+                    type: 'image_url',
+                    image_url: { url: imageData }
+                },
+                {
+                    type: 'text',
+                    text: `请分析这张课表图片，提取出所有课程信息。请严格按照以下JSON格式返回，不要包含任何其他文字：
+
+{
+  "courses": [
+    {
+      "name": "课程名称",
+      "teacher": "教师姓名",
+      "timeSlots": [
+        {
+          "location": "上课地点",
+          "startWeek": 开始周数,
+          "endWeek": 结束周数,
+          "dayOfWeek": 星期几(1-7),
+          "startClass": 开始节次,
+          "endClass": 结束节次
+        }
+      ]
+    }
+  ]
+}
+
+注意事项：
+1. 星期一=1, 星期二=2, ..., 星期日=7
+2. 节次从1开始计数
+3. 如果同一门课程在不同时间段上课，请在timeSlots数组中添加多个时间段
+4. 确保所有数字都是整数类型
+5. 如果某些信息无法识别，请用合理的默认值
+6. 不要提取学期信息或课程时间配置，这些需要用户手动输入`
+                }
+            ]
+        }]
+    };
+
+    console.log('直接调用Qwen API');
+    
+    const response = await fetch('https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${apiKey}`
+        },
+        body: JSON.stringify(requestBody)
+    });
+
+    if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        console.error('Qwen API错误响应:', errorData);
+        throw new Error(errorData.error?.message || `Qwen API请求失败: ${response.status}`);
+    }
+
+    const data = await response.json();
+    const content = data.choices[0].message.content;
+    
+    console.log('Qwen API原始响应:', content);
+    
+    try {
+        // 清理响应内容，移除可能的markdown格式
+        let cleanContent = content.trim();
+        if (cleanContent.startsWith('```json')) {
+            cleanContent = cleanContent.replace(/```json\s*/, '').replace(/```\s*$/, '');
+        } else if (cleanContent.startsWith('```')) {
+            cleanContent = cleanContent.replace(/```\s*/, '').replace(/```\s*$/, '');
+        }
+        
+        const parsedData = JSON.parse(cleanContent);
+        return {
+            success: true,
+            data: parsedData
+        };
+    } catch (parseError) {
+        console.error('JSON解析错误:', parseError);
+        console.error('原始内容:', content);
+        throw new Error('AI返回的数据格式不正确，请重试');
+    }
+}
+
+// 获取API Key（兼容GitHub Actions注入）
+function getApiKey() {
+    // GitHub Actions会通过sed替换将API Key注入到这里
+    const config = {
+        apiKey: 'DASHSCOPE_API_KEY_PLACEHOLDER'
+    };
+    
+    // 检查API Key是否已被正确替换
+    if (!config.apiKey || config.apiKey.length < 10 || !config.apiKey.startsWith('sk-')) {
+        console.error('API Key未正确配置');
+        return null;
+    }
+    
+    return config.apiKey;
 }
 
 // 已弃用的Qwen API直接调用（保留作为参考）
