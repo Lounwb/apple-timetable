@@ -1123,9 +1123,21 @@ async function callDeepSeekAPI(apiKey, model, imageData) {
 async function callProxyAPI(imageData) {
     try {
         // 检测当前域名，自动选择API端点
-        const apiUrl = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-            ? 'http://localhost:3000/api/analyze-schedule'  // 本地开发
-            : '/api/analyze-schedule';  // 生产环境（Vercel/Netlify）
+        let apiUrl;
+        
+        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+            // 本地开发环境
+            apiUrl = 'http://localhost:3000/api/analyze-schedule';
+        } else if (window.location.hostname.includes('github.io')) {
+            // GitHub Pages - 调用Vercel部署的API
+            // 你可能需要根据实际的Vercel域名调整这个URL
+            apiUrl = 'https://apple-timetable-lounwb.vercel.app/api/analyze-schedule';
+        } else {
+            // Vercel或其他支持Serverless的平台
+            apiUrl = '/api/analyze-schedule';
+        }
+        
+        console.log('调用API端点:', apiUrl);
         
         const response = await fetch(apiUrl, {
             method: 'POST',
@@ -1138,12 +1150,21 @@ async function callProxyAPI(imageData) {
             })
         });
         
+        console.log('API响应状态:', response.status, response.statusText);
+        
         if (!response.ok) {
             const errorData = await response.json().catch(() => ({}));
-            throw new Error(errorData.error || `API请求失败: ${response.status}`);
+            console.error('API错误响应:', errorData);
+            
+            if (response.status === 405) {
+                throw new Error('API端点不可用，请确认Vercel部署状态或联系开发者');
+            }
+            
+            throw new Error(errorData.error || `API请求失败: ${response.status} ${response.statusText}`);
         }
         
         const data = await response.json();
+        console.log('API成功响应');
         return data;
         
     } catch (error) {
