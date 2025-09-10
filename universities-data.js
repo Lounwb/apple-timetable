@@ -62,6 +62,24 @@ const universitiesData = {
             { start: "21:10", end: "21:55" }
         ]
     },
+    "山东大学（济南校本部）": {
+        "address": "山东省济南市",
+        "classesPerDay": 12,
+        "classTimes": [
+            { start: "08:00", end: "08:50" },
+            { start: "09:00", end: "10:50" },
+            { start: "10:10", end: "11:00" },
+            { start: "11:10", end: "12:00" },
+            { start: "14:00", end: "14:50" },
+            { start: "15:00", end: "15:50" },
+            { start: "16:10", end: "17:00" },
+            { start: "17:10", end: "18:00" },
+            { start: "19:00", end: "19:50" },
+            { start: "20:00", end: "20:50" },
+            { start: "21:10", end: "22:00" },
+            { start: "22:10", end: "23:00" }
+        ]
+    },
     "四川大学（望江校区）": {
         "address": "成都市武侯区一环路南一段24号",
         "classesPerDay": null,
