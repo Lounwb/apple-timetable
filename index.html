@@ -125,14 +125,121 @@
         #universityDropdown div:hover {
             background-color: #dbeafe;
         }
+        
+        /* GitHub Star 左上角折角标签样式 */
+        .github-corner {
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 9999;
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #007AFF 50%, transparent 50%);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .github-corner:hover {
+            background: linear-gradient(135deg, #0056CC 50%, transparent 50%);
+            transform: scale(1.1);
+        }
+        
+        .github-corner .github-icon {
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            width: 24px;
+            height: 24px;
+            color: white;
+            transition: all 0.3s ease;
+        }
+        
+        .github-corner:hover .github-icon {
+            animation: wave 0.6s ease-in-out;
+        }
+        
+        @keyframes wave {
+            0%, 100% { transform: rotate(0deg); }
+            25% { transform: rotate(-10deg); }
+            75% { transform: rotate(10deg); }
+        }
+        
+        .github-star-text {
+            position: absolute;
+            top: 42px;
+            left: 22px;
+            color: white;
+            font-size: 10px;
+            font-weight: bold;
+            transform: rotate(45deg);
+            white-space: nowrap;
+        }
+        
+        /* 移动端优化 */
+        @media (max-width: 768px) {
+            .github-corner {
+                width: 60px;
+                height: 60px;
+            }
+            
+            .github-corner .github-icon {
+                top: 8px;
+                left: 8px;
+                width: 20px;
+                height: 20px;
+            }
+            
+            .github-star-text {
+                top: 32px;
+                left: 16px;
+                font-size: 8px;
+            }
+        }
     </style>
 </head>
 <body class="bg-gradient-to-br from-blue-light to-white min-h-screen">
+    <!-- GitHub Star 左上角折角标签 -->
+    <a href="https://github.com/Lounwb/apple-timetable" target="_blank" rel="noopener noreferrer" class="github-corner" title="在GitHub上给我们点个Star ⭐">
+        <svg class="github-icon" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
+        </svg>
+        <!-- <span class="github-star-text">STAR</span> -->
+    </a>
     <div class="container mx-auto mobile-optimized ipad-optimized ios-safe px-4 py-8 max-w-4xl ios-safe-top">
         <!-- 页面标题 -->
         <div class="text-center mb-8 mobile-header landscape-compact">
             <h1 class="text-3xl md:text-4xl font-bold text-primary mb-2 landscape-title">课表转ICS工具</h1>
-            <p class="text-blue-600 text-sm md:text-base">将你的课表转换为ICS格式，轻松导入到苹果日历中</p>
+            <p class="text-blue-600 text-sm md:text-base mb-4">将你的课表转换为ICS格式，轻松导入到苹果日历中</p>
+            
+            <!-- GitHub Star 提示按钮 - 确保可点击 -->
+            <div class="flex justify-center mb-4">
+                <a href="https://github.com/Lounwb/apple-timetable" target="_blank" rel="noopener noreferrer" 
+                   class="inline-flex items-center bg-gradient-to-r from-blue-500 to-primary text-white px-6 py-3 rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 no-underline">
+                    <svg class="w-5 h-5 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                    </svg>
+                    <span class="text-sm font-semibold">觉得有用？给我们点个Star ⭐</span>
+                </a>
+            </div>
+            
+            <!-- GitHub 仓库链接 -->
+            <div class="flex justify-center space-x-4 text-sm">
+                <a href="https://github.com/Lounwb/apple-timetable" target="_blank" rel="noopener noreferrer" 
+                   class="inline-flex items-center text-blue-600 hover:text-primary transition-colors duration-200 font-medium no-underline">
+                    <svg class="w-4 h-4 mr-1 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
+                    </svg>
+                    GitHub 源码
+                </a>
+                <span class="text-gray-400">|</span>
+                <a href="https://github.com/Lounwb/apple-timetable/issues" target="_blank" rel="noopener noreferrer"
+                   class="inline-flex items-center text-blue-600 hover:text-primary transition-colors duration-200 font-medium no-underline">
+                    <svg class="w-4 h-4 mr-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/>
+                    </svg>
+                    反馈问题
+                </a>
+            </div>
         </div>
 
         <!-- 主要内容区域 -->
