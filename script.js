@@ -1619,11 +1619,8 @@ function setupUniversitySearch() {
             name.replace(/大学|学院|科技|理工|师范/g, '').toLowerCase().includes(query)
         ).slice(0, 10); // 限制显示10个结果
         
-        if (matches.length > 0) {
-            showDropdown(matches, query);
-        } else {
-            hideDropdown();
-        }
+        // 无论是否有匹配结果都显示下拉框（包含"其他学校"选项）
+        showDropdown(matches, query);
     });
     
     // 焦点事件
@@ -1634,9 +1631,8 @@ function setupUniversitySearch() {
                 name.toLowerCase().includes(query)
             ).slice(0, 10);
             
-            if (matches.length > 0) {
-                showDropdown(matches, query);
-            }
+            // 无论是否有匹配结果都显示下拉框（包含"其他学校"选项）
+            showDropdown(matches, query);
         }
     });
     
@@ -1656,6 +1652,7 @@ function setupUniversitySearch() {
     function showDropdown(matches, query) {
         dropdown.innerHTML = '';
         
+        // 显示匹配的学校
         matches.forEach(name => {
             const item = document.createElement('div');
             item.className = 'px-3 py-2 hover:bg-blue-50 cursor-pointer border-b border-gray-100';
@@ -1674,9 +1671,26 @@ function setupUniversitySearch() {
             dropdown.appendChild(item);
         });
         
-        // 添加"其他学校"选项
+        // 如果没有匹配结果，显示提示信息
+        if (matches.length === 0) {
+            const noResultItem = document.createElement('div');
+            noResultItem.className = 'px-3 py-2 text-gray-500 text-center border-b border-gray-100';
+            noResultItem.innerHTML = `
+                <div class="text-sm">未找到匹配的学校</div>
+            `;
+            dropdown.appendChild(noResultItem);
+        }
+        
+        // 添加分隔线（如果有匹配结果）
+        if (matches.length > 0) {
+            const separator = document.createElement('div');
+            separator.className = 'border-t border-gray-200';
+            dropdown.appendChild(separator);
+        }
+        
+        // 始终添加"其他学校"选项
         const otherItem = document.createElement('div');
-        otherItem.className = 'px-3 py-2 hover:bg-gray-50 cursor-pointer border-t-2 border-blue-200 bg-gray-50';
+        otherItem.className = 'px-3 py-2 hover:bg-gray-50 cursor-pointer bg-gray-50';
         otherItem.innerHTML = `
             <div class="font-medium text-gray-700">📝 其他学校</div>
             <div class="text-sm text-gray-500">手动输入学校信息</div>
