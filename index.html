@@ -102,12 +102,6 @@
         
         /* iOS输入框焦点优化 */
         @media screen and (max-width: 768px) {
-            /* 防止iOS输入框焦点时页面跳动 */
-            body.ios-input-focused {
-                position: fixed;
-                width: 100%;
-            }
-            
             /* 输入框过渡动画优化 */
             input, textarea, select {
                 transition: all 0.2s ease-in-out;
@@ -116,6 +110,13 @@
             /* 防止输入框切换时的视觉跳动 */
             .form-container {
                 scroll-behavior: smooth;
+            }
+            
+            /* 防止iOS键盘弹出时的页面缩放 */
+            input:focus, textarea:focus, select:focus {
+                transform: translateZ(0);
+                -webkit-appearance: none;
+                appearance: none;
             }
         }
         
