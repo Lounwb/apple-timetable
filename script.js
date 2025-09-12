@@ -443,13 +443,13 @@ function generateAndImportICS() {
     // 存储ICS内容
     window.currentICSContent = icsContent;
     
-    // 根据设备类型执行不同的操作
+    // 所有设备都使用下载方式，这样可以直接弹出日历导入对话框
+    downloadICS(icsContent);
+    
+    // 根据设备显示不同的提示消息
     if (isAppleDevice()) {
-        // Apple设备：直接导入到日历
-        importToAppleCalendar();
+        showSuccessMessage('ICS文件已生成！请在下载完成后点击文件导入到日历应用。');
     } else {
-        // 其他设备：下载ICS文件
-        downloadICS(icsContent);
         showSuccessMessage('ICS文件生成成功！请下载后导入到您的日历应用中。');
     }
 }
@@ -633,13 +633,16 @@ function downloadICS(content) {
     const link = document.createElement('a');
     link.href = url;
     link.download = '课程表.ics';
+    
+    // 设置正确的MIME类型以便更好地被日历应用识别
+    link.type = 'text/calendar';
+    
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    URL.revokeObjectURL(url);
     
-    // 显示成功消息
-    showSuccessMessage('ICS文件已生成并开始下载！');
+    // 延迟清理URL对象
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
 // 显示成功消息
