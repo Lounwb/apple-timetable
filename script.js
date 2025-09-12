@@ -1648,6 +1648,9 @@ function setupUniversitySearch() {
     const hiddenInput = document.getElementById('schoolAddress');
     
     let selectedUniversity = null;
+    let keyboardSelectedIndex = -1; // 键盘选中的索引
+    let currentMatches = []; // 当前搜索匹配的结果
+    let dropdownItems = []; // 当前下拉框中的所有项目
     
     // 获取所有大学名称
     const universities = Object.keys(window.universitiesData || {});
@@ -1655,6 +1658,9 @@ function setupUniversitySearch() {
     // 输入事件处理
     searchInput.addEventListener('input', function() {
         const query = this.value.trim().toLowerCase();
+        
+        // 重置键盘选择
+        keyboardSelectedIndex = -1;
         
         if (query.length === 0) {
             hideDropdown();
@@ -1666,6 +1672,9 @@ function setupUniversitySearch() {
             name.toLowerCase().includes(query) ||
             name.replace(/大学|学院|科技|理工|师范/g, '').toLowerCase().includes(query)
         ).slice(0, 10); // 限制显示10个结果
+        
+        // 保存当前匹配结果
+        currentMatches = matches;
         
         // 无论是否有匹配结果都显示下拉框（包含"其他学校"选项）
         showDropdown(matches, query);
@@ -1679,8 +1688,36 @@ function setupUniversitySearch() {
                 name.toLowerCase().includes(query)
             ).slice(0, 10);
             
+            // 保存当前匹配结果
+            currentMatches = matches;
+            
             // 无论是否有匹配结果都显示下拉框（包含"其他学校"选项）
             showDropdown(matches, query);
+        }
+    });
+    
+    // 键盘导航事件
+    searchInput.addEventListener('keydown', function(e) {
+        if (!dropdown.classList.contains('hidden')) {
+            switch(e.key) {
+                case 'ArrowDown':
+                    e.preventDefault();
+                    moveSelection(1);
+                    break;
+                case 'ArrowUp':
+                    e.preventDefault();
+                    moveSelection(-1);
+                    break;
+                case 'Enter':
+                    e.preventDefault();
+                    selectCurrentItem();
+                    break;
+                case 'Escape':
+                    e.preventDefault();
+                    hideDropdown();
+                    keyboardSelectedIndex = -1;
+                    break;
+            }
         }
     });
     
@@ -1699,11 +1736,14 @@ function setupUniversitySearch() {
     // 显示下拉框
     function showDropdown(matches, query) {
         dropdown.innerHTML = '';
+        dropdownItems = []; // 重置下拉框项目数组
         
         // 显示匹配的学校
-        matches.forEach(name => {
+        matches.forEach((name, index) => {
             const item = document.createElement('div');
             item.className = 'px-3 py-2 hover:bg-blue-50 cursor-pointer border-b border-gray-100';
+            item.setAttribute('data-type', 'university');
+            item.setAttribute('data-name', name);
             
             // 高亮匹配的文字
             const highlightedName = highlightMatch(name, query);
@@ -1717,16 +1757,19 @@ function setupUniversitySearch() {
             });
             
             dropdown.appendChild(item);
+            dropdownItems.push(item); // 添加到项目数组
         });
         
         // 如果没有匹配结果，显示提示信息
         if (matches.length === 0) {
             const noResultItem = document.createElement('div');
             noResultItem.className = 'px-3 py-2 text-gray-500 text-center border-b border-gray-100';
+            noResultItem.setAttribute('data-type', 'no-result');
             noResultItem.innerHTML = `
                 <div class="text-sm">未找到匹配的学校</div>
             `;
             dropdown.appendChild(noResultItem);
+            // 不添加到dropdownItems，因为这不是可选择的项目
         }
         
         // 添加分隔线（如果有匹配结果）
@@ -1739,6 +1782,7 @@ function setupUniversitySearch() {
         // 始终添加"其他学校"选项
         const otherItem = document.createElement('div');
         otherItem.className = 'px-3 py-2 hover:bg-gray-50 cursor-pointer bg-gray-50';
+        otherItem.setAttribute('data-type', 'other');
         otherItem.innerHTML = `
             <div class="font-medium text-gray-700">📝 其他学校</div>
             <div class="text-sm text-gray-500">手动输入学校信息</div>
@@ -1749,12 +1793,68 @@ function setupUniversitySearch() {
         });
         
         dropdown.appendChild(otherItem);
+        dropdownItems.push(otherItem); // 添加到项目数组
+        
         dropdown.classList.remove('hidden');
+        
+        // 重置键盘选择索引
+        keyboardSelectedIndex = -1;
     }
     
     // 隐藏下拉框
     function hideDropdown() {
         dropdown.classList.add('hidden');
+        keyboardSelectedIndex = -1;
+        // 清除所有键盘选中状态
+        dropdownItems.forEach(item => {
+            item.classList.remove('keyboard-selected');
+        });
+    }
+    
+    // 移动选择
+    function moveSelection(direction) {
+        if (dropdownItems.length === 0) return;
+        
+        // 清除当前选中状态
+        if (keyboardSelectedIndex >= 0 && keyboardSelectedIndex < dropdownItems.length) {
+            dropdownItems[keyboardSelectedIndex].classList.remove('keyboard-selected');
+        }
+        
+        // 计算新的选中索引
+        keyboardSelectedIndex += direction;
+        
+        // 边界处理：循环选择
+        if (keyboardSelectedIndex >= dropdownItems.length) {
+            keyboardSelectedIndex = 0;
+        } else if (keyboardSelectedIndex < 0) {
+            keyboardSelectedIndex = dropdownItems.length - 1;
+        }
+        
+        // 应用新的选中状态
+        if (keyboardSelectedIndex >= 0 && keyboardSelectedIndex < dropdownItems.length) {
+            dropdownItems[keyboardSelectedIndex].classList.add('keyboard-selected');
+            
+            // 滚动到可视区域
+            dropdownItems[keyboardSelectedIndex].scrollIntoView({
+                behavior: 'smooth',
+                block: 'nearest'
+            });
+        }
+    }
+    
+    // 选择当前项目
+    function selectCurrentItem() {
+        if (keyboardSelectedIndex >= 0 && keyboardSelectedIndex < dropdownItems.length) {
+            const selectedItem = dropdownItems[keyboardSelectedIndex];
+            const itemType = selectedItem.getAttribute('data-type');
+            
+            if (itemType === 'university') {
+                const universityName = selectedItem.getAttribute('data-name');
+                selectUniversity(universityName);
+            } else if (itemType === 'other') {
+                selectOtherSchool();
+            }
+        }
     }
     
     // 高亮匹配文字
