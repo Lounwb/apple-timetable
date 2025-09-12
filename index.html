@@ -100,6 +100,25 @@
             }
         }
         
+        /* iOS输入框焦点优化 */
+        @media screen and (max-width: 768px) {
+            /* 防止iOS输入框焦点时页面跳动 */
+            body.ios-input-focused {
+                position: fixed;
+                width: 100%;
+            }
+            
+            /* 输入框过渡动画优化 */
+            input, textarea, select {
+                transition: all 0.2s ease-in-out;
+            }
+            
+            /* 防止输入框切换时的视觉跳动 */
+            .form-container {
+                scroll-behavior: smooth;
+            }
+        }
+        
         /* 横屏优化 */
         @media screen and (orientation: landscape) and (max-height: 500px) {
             .landscape-compact {

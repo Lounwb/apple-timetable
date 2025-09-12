@@ -1525,17 +1525,97 @@ function optimizeMobileExperience() {
     
     // 处理iOS输入框焦点问题
     if (/iPhone|iPad|iPod/.test(navigator.userAgent)) {
+        let isInputFocused = false;
+        let lastScrollPosition = 0;
+        let focusTimeout = null;
+        let blurTimeout = null;
+        
         document.addEventListener('focusin', function(e) {
             if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
-                setTimeout(() => {
-                    e.target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                // 清除之前的超时
+                if (blurTimeout) {
+                    clearTimeout(blurTimeout);
+                    blurTimeout = null;
+                }
+                
+                isInputFocused = true;
+                document.body.classList.add('ios-input-focused');
+                
+                // 记录当前滚动位置
+                lastScrollPosition = window.pageYOffset || document.documentElement.scrollTop;
+                
+                // 延迟滚动到输入框，确保键盘已弹出
+                focusTimeout = setTimeout(() => {
+                    if (isInputFocused && e.target === document.activeElement) {
+                        // 计算输入框位置，确保它在屏幕可视区域内
+                        const rect = e.target.getBoundingClientRect();
+                        const windowHeight = window.innerHeight;
+                        const keyboardHeight = windowHeight * 0.4; // 估算键盘高度
+                        
+                        if (rect.bottom > windowHeight - keyboardHeight) {
+                            e.target.scrollIntoView({ 
+                                behavior: 'smooth', 
+                                block: 'center',
+                                inline: 'nearest'
+                            });
+                        }
+                    }
                 }, 300);
             }
         });
         
         document.addEventListener('focusout', function(e) {
-            setTimeout(() => {
-                window.scrollTo(0, 0);
+            if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
+                // 清除焦点超时
+                if (focusTimeout) {
+                    clearTimeout(focusTimeout);
+                    focusTimeout = null;
+                }
+                
+                // 延迟处理失焦，以便检测是否有其他输入框获得焦点
+                blurTimeout = setTimeout(() => {
+                    const activeElement = document.activeElement;
+                    const isAnotherInputFocused = activeElement && 
+                        (activeElement.tagName === 'INPUT' || activeElement.tagName === 'TEXTAREA');
+                    
+                    if (!isAnotherInputFocused) {
+                        // 没有其他输入框获得焦点，键盘将隐藏
+                        isInputFocused = false;
+                        document.body.classList.remove('ios-input-focused');
+                        
+                        // 不自动滚动到顶部，保持用户的浏览位置
+                        // 只在必要时进行微调
+                    } else {
+                        // 有其他输入框获得焦点，保持焦点状态
+                        // 不做任何滚动操作，让新的focusin事件处理
+                    }
+                }, 150);
+            }
+        });
+        
+        // 处理页面滚动时的输入框状态
+        let scrollTimeout = null;
+        window.addEventListener('scroll', function() {
+            if (scrollTimeout) {
+                clearTimeout(scrollTimeout);
+            }
+            
+            scrollTimeout = setTimeout(() => {
+                // 如果有输入框处于焦点状态，确保它仍然可见
+                const activeElement = document.activeElement;
+                if (activeElement && (activeElement.tagName === 'INPUT' || activeElement.tagName === 'TEXTAREA')) {
+                    const rect = activeElement.getBoundingClientRect();
+                    const windowHeight = window.innerHeight;
+                    
+                    // 如果输入框被遮挡，重新调整位置
+                    if (rect.top < 50 || rect.bottom > windowHeight - 100) {
+                        activeElement.scrollIntoView({ 
+                            behavior: 'smooth', 
+                            block: 'center',
+                            inline: 'nearest'
+                        });
+                    }
+                }
             }, 100);
         });
     }
