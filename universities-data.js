@@ -62,24 +62,6 @@ const universitiesData = {
             { start: "21:10", end: "21:55" }
         ]
     },
-    "山东大学（济南校本部）": {
-        "address": "山东省济南市",
-        "classesPerDay": 12,
-        "classTimes": [
-            { start: "08:00", end: "08:50" },
-            { start: "09:00", end: "10:50" },
-            { start: "10:10", end: "11:00" },
-            { start: "11:10", end: "12:00" },
-            { start: "14:00", end: "14:50" },
-            { start: "15:00", end: "15:50" },
-            { start: "16:10", end: "17:00" },
-            { start: "17:10", end: "18:00" },
-            { start: "19:00", end: "19:50" },
-            { start: "20:00", end: "20:50" },
-            { start: "21:10", end: "22:00" },
-            { start: "22:10", end: "23:00" }
-        ]
-    },
     "四川大学（望江校区）": {
         "address": "成都市武侯区一环路南一段24号",
         "classesPerDay": null,
@@ -122,18 +104,57 @@ const universitiesData = {
     },
     "山东大学（中心校区）": {
         "address": "山东省济南市历城区山大南路27号",
-        "classesPerDay": null,
-        "classTimes": []
+        "classesPerDay": 12,
+        "classTimes": [
+            { start: "08:00", end: "08:50" },
+            { start: "09:00", end: "10:50" },
+            { start: "10:10", end: "11:00" },
+            { start: "11:10", end: "12:00" },
+            { start: "14:00", end: "14:50" },
+            { start: "15:00", end: "15:50" },
+            { start: "16:10", end: "17:00" },
+            { start: "17:10", end: "18:00" },
+            { start: "19:00", end: "19:50" },
+            { start: "20:00", end: "20:50" },
+            { start: "21:10", end: "22:00" },
+            { start: "22:10", end: "23:00" }
+        ]
     },
     "山东大学（威海校区）": {
         "address": "山东省威海市文化西路180号",
-        "classesPerDay": null,
-        "classTimes": []
+        "classesPerDay": 12,
+        "classTimes": [
+            { start: "08:00", end: "08:50" },
+            { start: "09:00", end: "10:50" },
+            { start: "10:10", end: "11:00" },
+            { start: "11:10", end: "12:00" },
+            { start: "14:00", end: "14:50" },
+            { start: "15:00", end: "15:50" },
+            { start: "16:10", end: "17:00" },
+            { start: "17:10", end: "18:00" },
+            { start: "19:00", end: "19:50" },
+            { start: "20:00", end: "20:50" },
+            { start: "21:10", end: "22:00" },
+            { start: "22:10", end: "23:00" }
+        ]
     },
     "山东大学（青岛校区）": {
         "address": "山东省青岛市即墨区滨海路72号",
-        "classesPerDay": null,
-        "classTimes": []
+        "classesPerDay": 12,
+        "classTimes": [
+            { start: "08:00", end: "08:50" },
+            { start: "09:00", end: "10:50" },
+            { start: "10:10", end: "11:00" },
+            { start: "11:10", end: "12:00" },
+            { start: "14:00", end: "14:50" },
+            { start: "15:00", end: "15:50" },
+            { start: "16:10", end: "17:00" },
+            { start: "17:10", end: "18:00" },
+            { start: "19:00", end: "19:50" },
+            { start: "20:00", end: "20:50" },
+            { start: "21:10", end: "22:00" },
+            { start: "22:10", end: "23:00" }
+        ]
     },
     "北京师范大学（北京校区）": {
         "address": "北京市海淀区新街口外大街19号",
@@ -232,13 +253,39 @@ const universitiesData = {
     },
     "山东大学（软件园校区）": {
         "address": "山东省济南市历下区舜华路1500号",
-        "classesPerDay": null,
-        "classTimes": []
+        "classesPerDay": 12,
+        "classTimes": [
+            { start: "08:00", end: "08:50" },
+            { start: "09:00", end: "10:50" },
+            { start: "10:10", end: "11:00" },
+            { start: "11:10", end: "12:00" },
+            { start: "14:00", end: "14:50" },
+            { start: "15:00", end: "15:50" },
+            { start: "16:10", end: "17:00" },
+            { start: "17:10", end: "18:00" },
+            { start: "19:00", end: "19:50" },
+            { start: "20:00", end: "20:50" },
+            { start: "21:10", end: "22:00" },
+            { start: "22:10", end: "23:00" }
+        ]
     },
     "山东大学（洪家楼校区）": {
         "address": "山东省济南市历城区洪家楼5号",
-        "classesPerDay": null,
-        "classTimes": []
+        "classesPerDay": 12,
+        "classTimes": [
+            { start: "08:00", end: "08:50" },
+            { start: "09:00", end: "10:50" },
+            { start: "10:10", end: "11:00" },
+            { start: "11:10", end: "12:00" },
+            { start: "14:00", end: "14:50" },
+            { start: "15:00", end: "15:50" },
+            { start: "16:10", end: "17:00" },
+            { start: "17:10", end: "18:00" },
+            { start: "19:00", end: "19:50" },
+            { start: "20:00", end: "20:50" },
+            { start: "21:10", end: "22:00" },
+            { start: "22:10", end: "23:00" }
+        ]
     },
     "浙江大学（紫金港校区）": {
         "address": "浙江省杭州市西湖区余杭塘路866号",
@@ -312,16 +359,6 @@ const universitiesData = {
     },
     "上海交通大学（闵行校区）": {
         "address": "上海市闵行区东川路800号",
-        "classesPerDay": null,
-        "classTimes": []
-    },
-    "山东大学（威海校区）": {
-        "address": "山东省威海市文化西路180号",
-        "classesPerDay": null,
-        "classTimes": []
-    },
-    "山东大学（青岛校区）": {
-        "address": "山东省青岛市即墨区滨海路72号",
         "classesPerDay": null,
         "classTimes": []
     },
