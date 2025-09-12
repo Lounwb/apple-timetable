@@ -386,6 +386,82 @@ const universitiesData = {
         "address": "武汉市江汉区航空路13号",
         "classesPerDay": null,
         "classTimes": []
+    },
+    "中国科学院大学（雁栖湖校区）": {
+        "address": "北京市怀柔区雁栖湖东路1号",
+        "classesPerDay": "13",
+        "classTimes": [
+            { start: "08:30", end: "09:15" },
+            { start: "09:20", end: "10:05" },
+            { start: "10:25", end: "11:10" },
+            { start: "11:15", end: "12:00" },
+            { start: "13:30", end: "14:15" },
+            { start: "14:20", end: "15:05" },
+            { start: "15:25", end: "16:10" },
+            { start: "16:15", end: "17:00" },
+            { start: "17:05", end: "17:50" },
+            { start: "18:30", end: "19:15" },
+            { start: "19:20", end: "20:05" },
+            { start: "20:15", end: "21:00" },
+            { start: "21:05", end: "21:50" }
+        ]
+    },
+    "中国科学院大学（玉泉路校区）": {
+        "address": "北京市石景山区玉泉路（甲）19号",
+        "classesPerDay": "13",
+        "classTimes": [
+            { start: "08:30", end: "09:15" },
+            { start: "09:20", end: "10:05" },
+            { start: "10:25", end: "11:10" },
+            { start: "11:15", end: "12:00" },
+            { start: "13:30", end: "14:15" },
+            { start: "14:20", end: "15:05" },
+            { start: "15:25", end: "16:10" },
+            { start: "16:15", end: "17:00" },
+            { start: "17:05", end: "17:50" },
+            { start: "18:30", end: "19:15" },
+            { start: "19:20", end: "20:05" },
+            { start: "20:15", end: "21:00" },
+            { start: "21:05", end: "21:50" }
+        ]
+    },
+    "中国科学院大学（中关村校区）": {
+        "address": "北京市海淀区中关村东路80号",
+        "classesPerDay": "13",
+        "classTimes": [
+            { start: "08:30", end: "09:15" },
+            { start: "09:20", end: "10:05" },
+            { start: "10:25", end: "11:10" },
+            { start: "11:15", end: "12:00" },
+            { start: "13:30", end: "14:15" },
+            { start: "14:20", end: "15:05" },
+            { start: "15:25", end: "16:10" },
+            { start: "16:15", end: "17:00" },
+            { start: "17:05", end: "17:50" },
+            { start: "18:30", end: "19:15" },
+            { start: "19:20", end: "20:05" },
+            { start: "20:15", end: "21:00" },
+            { start: "21:05", end: "21:50" }
+        ]
+    },
+    "中国科学院大学（奥运村校区）": {
+        "address": "北京市朝阳区大屯路3号",
+        "classesPerDay": "13",
+        "classTimes": [
+            { start: "08:30", end: "09:15" },
+            { start: "09:20", end: "10:05" },
+            { start: "10:25", end: "11:10" },
+            { start: "11:15", end: "12:00" },
+            { start: "13:30", end: "14:15" },
+            { start: "14:20", end: "15:05" },
+            { start: "15:25", end: "16:10" },
+            { start: "16:15", end: "17:00" },
+            { start: "17:05", end: "17:50" },
+            { start: "18:30", end: "19:15" },
+            { start: "19:20", end: "20:05" },
+            { start: "20:15", end: "21:00" },
+            { start: "21:05", end: "21:50" }
+        ]
     }
 };
 
