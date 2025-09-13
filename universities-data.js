@@ -1,13 +1,14 @@
 // 中国大陆主要大学信息数据库
 const universitiesData = {
     // 985工程大学
-    "清华大学（北京校区）": {
-        "address": "北京市海淀区清华园1号",
+    // 北京大学
+    "北京大学（燕园校区）": {
+        "address": "北京市海淀区颐和园路5号",
         "classesPerDay": null,
         "classTimes": []
     },
-    "北京大学（校本部）": {
-        "address": "北京市海淀区颐和园路5号",
+    "清华大学（北京校区）": {
+        "address": "北京市海淀区清华园1号",
         "classesPerDay": null,
         "classTimes": []
     },
@@ -62,20 +63,60 @@ const universitiesData = {
             { start: "21:10", end: "21:55" }
         ]
     },
+    // 四川大学
     "四川大学（望江校区）": {
         "address": "成都市武侯区一环路南一段24号",
-        "classesPerDay": null,
-        "classTimes": []
+        "classesPerDay": 12,
+        "classTimes": [
+            { start: "08:00", end: "08:45" },
+            { start: "08:55", end: "09:40" },
+            { start: "10:00", end: "10:45" },
+            { start: "10:55", end: "11:40" },
+            { start: "14:00", end: "14:45" },
+            { start: "14:55", end: "15:40" },
+            { start: "15:50", end: "16:35" },
+            { start: "16:55", end: "17:40" },
+            { start: "17:50", end: "18:35" },
+            { start: "19:30", end: "20:15" },
+            { start: "20:25", end: "21:10" },
+            { start: "21:20", end: "22:05" }
+        ]
     },
     "四川大学（华西校区）": {
         "address": "成都市武侯区人民南路三段17号",
-        "classesPerDay": null,
-        "classTimes": []
+        "classesPerDay": 12,
+        "classTimes": [
+            { start: "08:00", end: "08:45" },
+            { start: "08:55", end: "09:40" },
+            { start: "10:00", end: "10:45" },
+            { start: "10:55", end: "11:40" },
+            { start: "14:00", end: "14:45" },
+            { start: "14:55", end: "15:40" },
+            { start: "15:50", end: "16:35" },
+            { start: "16:55", end: "17:40" },
+            { start: "17:50", end: "18:35" },
+            { start: "19:30", end: "20:15" },
+            { start: "20:25", end: "21:10" },
+            { start: "21:20", end: "22:05" }
+        ]
     },
     "四川大学（江安校区）": {
         "address": "成都市双流区川大路二段2号",
-        "classesPerDay": null,
-        "classTimes": []
+        "classesPerDay": 12,
+        "classTimes": [
+            { start: "08:15", end: "09:00" },
+            { start: "09:10", end: "09:55" },
+            { start: "10:15", end: "11:00" },
+            { start: "11:10", end: "11:55" },
+            { start: "13:50", end: "14:35" },
+            { start: "14:45", end: "15:30" },
+            { start: "15:40", end: "16:25" },
+            { start: "16:45", end: "17:30" },
+            { start: "17:40", end: "18:25" },
+            { start: "19:20", end: "20:05" },
+            { start: "20:15", end: "21:00" },
+            { start: "21:10", end: "21:55" }
+        ]
     },
     "中国矿业大学（南湖校区）": {
         "address": "江苏省徐州市铜山区大学路1号",
@@ -462,7 +503,15 @@ const universitiesData = {
             { start: "20:15", end: "21:00" },
             { start: "21:05", end: "21:50" }
         ]
-    }
+    },
+    "香港中文大学（主校区）": {
+        "address": "香港新界沙田小沥源源顺围7号",
+        "classesPerDay": null
+    },
+    "香港中文大学（深圳校区）": {
+        "address": "广东省深圳市龙岗区龙翔大道2001号",
+        "classesPerDay": null
+    },
 };
 
 // 导出数据（如果在Node.js环境中）
