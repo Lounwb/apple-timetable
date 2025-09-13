@@ -124,11 +124,11 @@ function updateClassTimesDisplay() {
         const timeDiv = document.createElement('div');
         timeDiv.className = 'flex items-center space-x-2';
         timeDiv.innerHTML = `
-            <span class="text-sm text-gray-600 w-8">第${index + 1}节</span>
-            <input type="time" value="${time.start}" class="px-2 py-1 border border-gray-300 rounded text-sm" data-index="${index}" data-type="start">
-            <span class="text-sm text-gray-500">-</span>
-            <input type="time" value="${time.end}" class="px-2 py-1 border border-gray-300 rounded text-sm" data-index="${index}" data-type="end">
-            <button type="button" class="text-red-500 hover:text-red-700 text-sm" onclick="removeClassTime(${index})">删除</button>
+            <span class="text-sm text-blue-600 font-medium whitespace-nowrap min-w-[3rem]">第${index + 1}节</span>
+            <input type="time" value="${time.start}" class="px-3 py-2 border border-blue-200 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary" data-index="${index}" data-type="start">
+            <span class="text-gray-500">-</span>
+            <input type="time" value="${time.end}" class="px-3 py-2 border border-blue-200 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary" data-index="${index}" data-type="end">
+            <button type="button" class="px-3 py-2 bg-red-500 text-white rounded-md text-sm hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-colors touch-target" onclick="removeClassTime(${index})">删除</button>
         `;
         
         // 添加时间变化监听器
@@ -1908,6 +1908,8 @@ function setupUniversitySearch() {
         
         // 清除自动填充的数据，恢复默认值
         document.getElementById('classesPerDay').value = '11';
+        document.getElementById('classDuration').value = '45';
+        document.getElementById('breakDuration').value = '15';
         
         // 重新初始化默认课程时间
         classTimes = [...defaultClassTimes];
@@ -1941,6 +1943,8 @@ function setupUniversitySearch() {
         
         // 清除自动填充的数据，恢复默认值
         document.getElementById('classesPerDay').value = 11;
+        document.getElementById('classDuration').value = '45';
+        document.getElementById('breakDuration').value = '15';
         
         // 重新初始化默认课程时间
         classTimes = [...defaultClassTimes];
@@ -1951,20 +1955,36 @@ function setupUniversitySearch() {
     
     // 自动填充大学数据
     function autoFillUniversityData(universityData) {
-        // 填充课程数量
-        document.getElementById('classesPerDay').value = universityData.classesPerDay;
+        // 填充课程数量（如果为null则使用默认值11）
+        const classesPerDay = universityData.classesPerDay || 11;
+        document.getElementById('classesPerDay').value = classesPerDay;
+        
+        // 填充每节课时长（如果有的话，否则默认45分钟）
+        const classDuration = universityData.classDuration || 45;
+        document.getElementById('classDuration').value = classDuration;
+        
+        // 填充大节间休息时间（如果有的话，否则默认15分钟）
+        const breakDuration = universityData.breakDuration || 15;
+        document.getElementById('breakDuration').value = breakDuration;
         
         // 清除并重新填充课程时间
         clearClassTimes();
         
         // 更新课程时间
         classTimes.length = 0;
-        universityData.classTimes.forEach(time => {
-            classTimes.push({
-                start: time.start,
-                end: time.end
+        
+        // 如果有具体的课程时间数据，使用它们；否则使用默认时间
+        if (universityData.classTimes && universityData.classTimes.length > 0) {
+            universityData.classTimes.forEach(time => {
+                classTimes.push({
+                    start: time.start,
+                    end: time.end
+                });
             });
-        });
+        } else {
+            // 使用默认课程时间
+            classTimes.push(...defaultClassTimes);
+        }
         
         // 更新显示
         updateClassTimesDisplay();
@@ -1977,35 +1997,16 @@ function setupUniversitySearch() {
         classTimes.length = 0;
     }
     
-    // 更新课程时间显示
-    function updateClassTimesDisplay() {
-        const container = document.getElementById('classTimes');
-        container.innerHTML = '';
-        
-        classTimes.forEach((time, index) => {
-            const timeDiv = document.createElement('div');
-            timeDiv.className = 'flex items-center space-x-2';
-            timeDiv.innerHTML = `
-                <span class="text-sm text-blue-600 w-12">第${index + 1}节</span>
-                <input type="time" value="${time.start}" onchange="updateClassTime(${index}, 'start', this.value)" 
-                       class="px-2 py-1 border border-blue-200 rounded text-sm focus:outline-none focus:ring-1 focus:ring-primary">
-                <span class="text-gray-500">-</span>
-                <input type="time" value="${time.end}" onchange="updateClassTime(${index}, 'end', this.value)" 
-                       class="px-2 py-1 border border-blue-200 rounded text-sm focus:outline-none focus:ring-1 focus:ring-primary">
-                <button type="button" onclick="removeClassTime(${index})" 
-                        class="px-2 py-1 bg-red-500 text-white rounded text-sm hover:bg-red-600 focus:outline-none">
-                    删除
-                </button>
-            `;
-            container.appendChild(timeDiv);
-        });
-    }
 }
 
 // 更新课程时间
 function updateClassTime(index, field, value) {
     if (classTimes[index]) {
         classTimes[index][field] = value;
+        // 如果是开始时间变化，自动更新结束时间
+        if (field === 'start') {
+            updateEndTime(index);
+        }
     }
 }
 

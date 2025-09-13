@@ -15,6 +15,8 @@ const universitiesData = {
     "电子科技大学（清水河校区）": {
         "address": "成都市高新区（西区）西源大道2006号",
         "classesPerDay": 11,
+        "classDuration": 45,
+        "breakDuration": 15,
         "classTimes": [
             { start: "08:30", end: "09:15" },
             { start: "09:20", end: "10:05" },
@@ -32,6 +34,8 @@ const universitiesData = {
     "电子科技大学（沙河校区）": {
         "address": "成都市成华区建设北路二段4号",
         "classesPerDay": 11,
+        "classDuration": 45,
+        "breakDuration": 15,
         "classTimes": [
             { start: "08:30", end: "09:15" },
             { start: "09:20", end: "10:05" },
@@ -49,6 +53,8 @@ const universitiesData = {
     "电子科技大学（九里堤校区）": {
         "address": "成都市金牛区九里堤西路8号",
         "classesPerDay": 11,
+        "classDuration": 45,
+        "breakDuration": 15,
         "classTimes": [
             { start: "08:30", end: "09:15" },
             { start: "09:20", end: "10:05" },
@@ -67,6 +73,8 @@ const universitiesData = {
     "四川大学（望江校区）": {
         "address": "成都市武侯区一环路南一段24号",
         "classesPerDay": 12,
+        "classDuration": 45,
+        "breakDuration": 20,
         "classTimes": [
             { start: "08:00", end: "08:45" },
             { start: "08:55", end: "09:40" },
@@ -85,6 +93,8 @@ const universitiesData = {
     "四川大学（华西校区）": {
         "address": "成都市武侯区人民南路三段17号",
         "classesPerDay": 12,
+        "classDuration": 45,
+        "breakDuration": 20,
         "classTimes": [
             { start: "08:00", end: "08:45" },
             { start: "08:55", end: "09:40" },
@@ -103,6 +113,8 @@ const universitiesData = {
     "四川大学（江安校区）": {
         "address": "成都市双流区川大路二段2号",
         "classesPerDay": 12,
+        "classDuration": 45,
+        "breakDuration": 20,
         "classTimes": [
             { start: "08:15", end: "09:00" },
             { start: "09:10", end: "09:55" },
@@ -143,9 +155,12 @@ const universitiesData = {
         "classesPerDay": null,
         "classTimes": []
     },
+    // 山东大学
     "山东大学（中心校区）": {
         "address": "山东省济南市历城区山大南路27号",
         "classesPerDay": 12,
+        "classDuration": 50,
+        "breakDuration": 20,
         "classTimes": [
             { start: "08:00", end: "08:50" },
             { start: "09:00", end: "10:50" },
@@ -164,6 +179,8 @@ const universitiesData = {
     "山东大学（威海校区）": {
         "address": "山东省威海市文化西路180号",
         "classesPerDay": 12,
+        "classDuration": 50,
+        "breakDuration": 20,
         "classTimes": [
             { start: "08:00", end: "08:50" },
             { start: "09:00", end: "10:50" },
@@ -182,6 +199,48 @@ const universitiesData = {
     "山东大学（青岛校区）": {
         "address": "山东省青岛市即墨区滨海路72号",
         "classesPerDay": 12,
+        "classDuration": 50,
+        "breakDuration": 20,
+        "classTimes": [
+            { start: "08:00", end: "08:50" },
+            { start: "09:00", end: "10:50" },
+            { start: "10:10", end: "11:00" },
+            { start: "11:10", end: "12:00" },
+            { start: "14:00", end: "14:50" },
+            { start: "15:00", end: "15:50" },
+            { start: "16:10", end: "17:00" },
+            { start: "17:10", end: "18:00" },
+            { start: "19:00", end: "19:50" },
+            { start: "20:00", end: "20:50" },
+            { start: "21:10", end: "22:00" },
+            { start: "22:10", end: "23:00" }
+        ]
+    },
+    "山东大学（软件园校区）": {
+        "address": "山东省济南市历下区舜华路1500号",
+        "classesPerDay": 12,
+        "classDuration": 50,
+        "breakDuration": 20,
+        "classTimes": [
+            { start: "08:00", end: "08:50" },
+            { start: "09:00", end: "10:50" },
+            { start: "10:10", end: "11:00" },
+            { start: "11:10", end: "12:00" },
+            { start: "14:00", end: "14:50" },
+            { start: "15:00", end: "15:50" },
+            { start: "16:10", end: "17:00" },
+            { start: "17:10", end: "18:00" },
+            { start: "19:00", end: "19:50" },
+            { start: "20:00", end: "20:50" },
+            { start: "21:10", end: "22:00" },
+            { start: "22:10", end: "23:00" }
+        ]
+    },
+    "山东大学（洪家楼校区）": {
+        "address": "山东省济南市历城区洪家楼5号",
+        "classesPerDay": 12,
+        "classDuration": 50,
+        "breakDuration": 20,
         "classTimes": [
             { start: "08:00", end: "08:50" },
             { start: "09:00", end: "10:50" },
@@ -292,42 +351,6 @@ const universitiesData = {
         "classesPerDay": null,
         "classTimes": []
     },
-    "山东大学（软件园校区）": {
-        "address": "山东省济南市历下区舜华路1500号",
-        "classesPerDay": 12,
-        "classTimes": [
-            { start: "08:00", end: "08:50" },
-            { start: "09:00", end: "10:50" },
-            { start: "10:10", end: "11:00" },
-            { start: "11:10", end: "12:00" },
-            { start: "14:00", end: "14:50" },
-            { start: "15:00", end: "15:50" },
-            { start: "16:10", end: "17:00" },
-            { start: "17:10", end: "18:00" },
-            { start: "19:00", end: "19:50" },
-            { start: "20:00", end: "20:50" },
-            { start: "21:10", end: "22:00" },
-            { start: "22:10", end: "23:00" }
-        ]
-    },
-    "山东大学（洪家楼校区）": {
-        "address": "山东省济南市历城区洪家楼5号",
-        "classesPerDay": 12,
-        "classTimes": [
-            { start: "08:00", end: "08:50" },
-            { start: "09:00", end: "10:50" },
-            { start: "10:10", end: "11:00" },
-            { start: "11:10", end: "12:00" },
-            { start: "14:00", end: "14:50" },
-            { start: "15:00", end: "15:50" },
-            { start: "16:10", end: "17:00" },
-            { start: "17:10", end: "18:00" },
-            { start: "19:00", end: "19:50" },
-            { start: "20:00", end: "20:50" },
-            { start: "21:10", end: "22:00" },
-            { start: "22:10", end: "23:00" }
-        ]
-    },
     "浙江大学（紫金港校区）": {
         "address": "浙江省杭州市西湖区余杭塘路866号",
         "classesPerDay": null,
@@ -430,7 +453,9 @@ const universitiesData = {
     },
     "中国科学院大学（雁栖湖校区）": {
         "address": "北京市怀柔区雁栖湖东路1号",
-        "classesPerDay": "13",
+        "classesPerDay": 13,
+        "classDuration": 45,
+        "breakDuration": 15,
         "classTimes": [
             { start: "08:30", end: "09:15" },
             { start: "09:20", end: "10:05" },
@@ -449,7 +474,9 @@ const universitiesData = {
     },
     "中国科学院大学（玉泉路校区）": {
         "address": "北京市石景山区玉泉路（甲）19号",
-        "classesPerDay": "13",
+        "classesPerDay": 13,
+        "classDuration": 45,
+        "breakDuration": 15,
         "classTimes": [
             { start: "08:30", end: "09:15" },
             { start: "09:20", end: "10:05" },
@@ -468,7 +495,9 @@ const universitiesData = {
     },
     "中国科学院大学（中关村校区）": {
         "address": "北京市海淀区中关村东路80号",
-        "classesPerDay": "13",
+        "classesPerDay": 13,
+        "classDuration": 45,
+        "breakDuration": 15,
         "classTimes": [
             { start: "08:30", end: "09:15" },
             { start: "09:20", end: "10:05" },
@@ -487,7 +516,9 @@ const universitiesData = {
     },
     "中国科学院大学（奥运村校区）": {
         "address": "北京市朝阳区大屯路3号",
-        "classesPerDay": "13",
+        "classesPerDay": 13,
+        "classDuration": 45,
+        "breakDuration": 15,
         "classTimes": [
             { start: "08:30", end: "09:15" },
             { start: "09:20", end: "10:05" },
