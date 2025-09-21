@@ -458,15 +458,29 @@ function generateAndImportICS() {
 function updateButtonTextForDevice() {
     const appleTexts = document.querySelectorAll('.apple-device-text');
     const otherTexts = document.querySelectorAll('.other-device-text');
+    const iosHint = document.getElementById('iosHint');
+    
+    // 检测iOS设备
+    const isiOS = detectiOSSafari();
     
     if (isAppleDevice()) {
         // Apple设备：显示一键导入文本
         appleTexts.forEach(el => el.classList.remove('hidden'));
         otherTexts.forEach(el => el.classList.add('hidden'));
+        
+        // 如果是iOS Safari，显示特殊提示
+        if (isiOS && iosHint) {
+            iosHint.classList.remove('hidden');
+        }
     } else {
         // 其他设备：显示生成ICS文本
         appleTexts.forEach(el => el.classList.add('hidden'));
         otherTexts.forEach(el => el.classList.remove('hidden'));
+        
+        // 隐藏iOS提示
+        if (iosHint) {
+            iosHint.classList.add('hidden');
+        }
     }
 }
 
@@ -628,21 +642,206 @@ function setDefaultValues() {
 
 // 下载ICS文件
 function downloadICS(content) {
-    const blob = new Blob([content], { type: 'text/calendar;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = '课程表.ics';
+    // 检测iOS Safari
+    const isiOSSafari = detectiOSSafari();
     
-    // 设置正确的MIME类型以便更好地被日历应用识别
-    link.type = 'text/calendar';
+    if (isiOSSafari) {
+        // iOS Safari特殊处理
+        downloadICSForiOS(content);
+    } else {
+        // 其他浏览器标准处理
+        downloadICSStandard(content);
+    }
+}
+
+// 检测iOS Safari浏览器
+function detectiOSSafari() {
+    const userAgent = navigator.userAgent;
+    const isiOS = /iPhone|iPad|iPod/.test(userAgent);
+    const isSafari = /Safari/.test(userAgent);
+    const isNotChrome = !/Chrome|CriOS|FxiOS|EdgiOS/.test(userAgent);
     
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    return isiOS && isSafari && isNotChrome;
+}
+
+// iOS Safari专用下载方法
+function downloadICSForiOS(content) {
+    try {
+        // 方法1: 使用data URI
+        const dataURI = 'data:text/calendar;charset=utf-8,' + encodeURIComponent(content);
+        
+        // 创建隐藏的链接
+        const link = document.createElement('a');
+        link.href = dataURI;
+        link.download = '课程表.ics';
+        link.style.display = 'none';
+        
+        // 必须添加到DOM中才能在iOS Safari中工作
+        document.body.appendChild(link);
+        
+        // 使用用户手势触发下载
+        setTimeout(() => {
+            try {
+                link.click();
+                
+                // 清理DOM
+                setTimeout(() => {
+                    if (document.body.contains(link)) {
+                        document.body.removeChild(link);
+                    }
+                }, 1000);
+                
+                showSuccessMessage('ICS文件已生成！请在Safari下载管理器中查看并点击文件导入到日历。');
+                
+                // 延迟显示iOS使用说明
+                setTimeout(() => {
+                    showIOSInstructions();
+                }, 2000);
+                
+            } catch (downloadError) {
+                console.warn('iOS Safari下载失败，尝试备用方案:', downloadError);
+                // 备用方案：使用window.open
+                try {
+                    window.open(dataURI, '_blank');
+                    showSuccessMessage('ICS文件已在新窗口中打开，请保存并导入到日历应用。');
+                } catch (error) {
+                    console.error('所有iOS下载方法都失败:', error);
+                    showICSCopyOption(content);
+                }
+            }
+        }, 100);
+        
+    } catch (error) {
+        console.error('iOS Safari处理失败:', error);
+        showICSCopyOption(content);
+    }
+}
+
+// 标准浏览器下载方法
+function downloadICSStandard(content) {
+    try {
+        const blob = new Blob([content], { type: 'text/calendar;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = '课程表.ics';
+        link.type = 'text/calendar';
+        
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+        showSuccessMessage('ICS文件生成成功！请下载后导入到您的日历应用中。');
+    } catch (error) {
+        console.error('标准下载失败:', error);
+        showErrorMessage('文件下载失败，请重试。');
+    }
+}
+
+// 显示iOS使用说明
+function showIOSInstructions() {
+    const modal = document.createElement('div');
+    modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4';
+    modal.innerHTML = `
+        <div class="bg-white rounded-lg p-6 max-w-md w-full">
+            <h3 class="text-lg font-semibold text-primary mb-4">📱 iOS导入说明</h3>
+            <div class="space-y-3 text-sm text-gray-700">
+                <div class="flex items-start space-x-2">
+                    <span class="text-primary font-bold min-w-[1.5rem]">1.</span>
+                    <span>在Safari下载管理器中找到"课程表.ics"文件</span>
+                </div>
+                <div class="flex items-start space-x-2">
+                    <span class="text-primary font-bold min-w-[1.5rem]">2.</span>
+                    <span>点击文件，选择"用日历打开"</span>
+                </div>
+                <div class="flex items-start space-x-2">
+                    <span class="text-primary font-bold min-w-[1.5rem]">3.</span>
+                    <span>在日历应用中确认导入课程表</span>
+                </div>
+            </div>
+            <div class="mt-4 p-3 bg-blue-50 rounded-lg">
+                <p class="text-xs text-blue-700">
+                    💡 提示：如果没有看到下载，请检查Safari的下载设置，或尝试长按链接选择"下载链接的文件"
+                </p>
+            </div>
+            <button onclick="this.parentElement.parentElement.remove()" 
+                    class="mt-4 w-full px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors">
+                我知道了
+            </button>
+        </div>
+    `;
     
-    // 延迟清理URL对象
-    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    document.body.appendChild(modal);
+    
+    // 点击背景关闭
+    modal.addEventListener('click', function(e) {
+        if (e.target === modal) {
+            document.body.removeChild(modal);
+        }
+    });
+}
+
+// 显示复制选项（最后的备用方案）
+function showICSCopyOption(content) {
+    const modal = document.createElement('div');
+    modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4';
+    modal.innerHTML = `
+        <div class="bg-white rounded-lg p-6 max-w-lg w-full max-h-96 overflow-hidden">
+            <h3 class="text-lg font-semibold text-primary mb-4">📋 手动导入课程表</h3>
+            <p class="text-sm text-gray-600 mb-4">
+                由于浏览器限制，请复制以下内容并通过其他方式导入：
+            </p>
+            <div class="mb-4">
+                <textarea id="icsContentCopy" class="w-full h-32 p-2 border border-gray-300 rounded text-xs font-mono resize-none" readonly>${content}</textarea>
+            </div>
+            <div class="flex space-x-3 mb-3">
+                <button onclick="copyICSContent()" class="flex-1 px-4 py-2 bg-primary text-white rounded hover:bg-primary-dark transition-colors">
+                    📋 复制内容
+                </button>
+                <button onclick="this.parentElement.parentElement.parentElement.remove()" class="flex-1 px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 transition-colors">
+                    关闭
+                </button>
+            </div>
+            <div class="text-xs text-gray-500 space-y-1">
+                <p>💡 复制后可以：</p>
+                <p>• 通过AirDrop发送给自己</p>
+                <p>• 粘贴到备忘录并保存为.ics文件</p>
+                <p>• 发送邮件给自己并保存附件</p>
+                <p>• 使用其他浏览器（如Chrome）访问本页面</p>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    // 全局函数用于复制
+    window.copyICSContent = function() {
+        const textarea = document.getElementById('icsContentCopy');
+        textarea.select();
+        textarea.setSelectionRange(0, 99999);
+        
+        try {
+            const successful = document.execCommand('copy');
+            if (successful) {
+                showSuccessMessage('内容已复制到剪贴板！');
+            } else {
+                throw new Error('复制命令失败');
+            }
+        } catch (error) {
+            console.error('复制失败:', error);
+            showErrorMessage('复制失败，请手动选择文本复制。');
+        }
+    };
+    
+    // 点击背景关闭
+    modal.addEventListener('click', function(e) {
+        if (e.target === modal) {
+            document.body.removeChild(modal);
+            // 清理全局函数
+            delete window.copyICSContent;
+        }
+    });
 }
 
 // 显示成功消息
