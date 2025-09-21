@@ -543,6 +543,41 @@ const universitiesData = {
         "address": "广东省深圳市龙岗区龙翔大道2001号",
         "classesPerDay": null
     },
+    // 海南大学
+    "海南大学（海甸校区）": {
+        "address": "海南省海口市美兰区人民大道58号",
+        "classesPerDay": 11,
+        "classTimes": [
+            { start: "07:40", end: "08:25" },
+            { start: "08:35", end: "09:20" },
+            { start: "09:45", end: "10:30" },
+            { start: "10:40", end: "11:25" },
+            { start: "14:30", end: "15:15" },
+            { start: "15:25", end: "16:10" },
+            { start: "16:35", end: "17:20" },
+            { start: "17:30", end: "18:15" },
+            { start: "19:20", end: "20:05" },
+            { start: "20:15", end: "21:00" },
+            { start: "21:10", end: "21:55" }
+        ]
+    },
+    "海南大学（城西校区）": {
+        "address": "海南省海口市龙华区城西路3号",
+        "classesPerDay": 11,
+        "classTimes": [
+            { start: "07:40", end: "08:25" },
+            { start: "08:35", end: "09:20" },
+            { start: "09:45", end: "10:30" },
+            { start: "10:40", end: "11:25" },
+            { start: "14:30", end: "15:15" },
+            { start: "15:25", end: "16:10" },
+            { start: "16:35", end: "17:20" },
+            { start: "17:30", end: "18:15" },
+            { start: "19:20", end: "20:05" },
+            { start: "20:15", end: "21:00" },
+            { start: "21:10", end: "21:55" }
+        ]
+    }
 };
 
 // 导出数据（如果在Node.js环境中）
