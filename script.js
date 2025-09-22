@@ -1651,12 +1651,46 @@ function parseAndFillData(data) {
                         let startClass = parseInt(timeSlotData.startClass) || 1;
                         let endClass = parseInt(timeSlotData.endClass) || 2;
                         
+                        // 确保classTimes数组足够长以容纳所有节次
+                        const requiredLength = Math.max(startClass, endClass);
+                        while (classTimes.length < requiredLength) {
+                            // 扩展classTimes数组，添加默认时间段
+                            const lastTime = classTimes[classTimes.length - 1];
+                            let nextStartHour, nextStartMinute;
+                            
+                            if (lastTime) {
+                                // 基于最后一个时间段计算下一个时间段
+                                const [endHour, endMinute] = lastTime.end.split(':').map(Number);
+                                if (endMinute + 10 >= 60) {
+                                    nextStartHour = endHour + 1;
+                                    nextStartMinute = (endMinute + 10) % 60;
+                                } else {
+                                    nextStartHour = endHour;
+                                    nextStartMinute = endMinute + 10;
+                                }
+                            } else {
+                                // 如果没有现有时间段，使用默认开始时间
+                                nextStartHour = 8;
+                                nextStartMinute = 30;
+                            }
+                            
+                            // 计算结束时间（45分钟后）
+                            let nextEndHour = nextStartHour;
+                            let nextEndMinute = nextStartMinute + 45;
+                            if (nextEndMinute >= 60) {
+                                nextEndHour += Math.floor(nextEndMinute / 60);
+                                nextEndMinute = nextEndMinute % 60;
+                            }
+                            
+                            classTimes.push({
+                                start: `${nextStartHour.toString().padStart(2, '0')}:${nextStartMinute.toString().padStart(2, '0')}`,
+                                end: `${nextEndHour.toString().padStart(2, '0')}:${nextEndMinute.toString().padStart(2, '0')}`
+                            });
+                        }
+                        
                         // 确保节次在有效范围内
-                        const maxClass = classTimes.length;
                         if (startClass < 1) startClass = 1;
-                        if (startClass > maxClass) startClass = maxClass;
                         if (endClass < startClass) endClass = startClass;
-                        if (endClass > maxClass) endClass = maxClass;
                         
                         // 验证其他字段
                         let startWeek = parseInt(timeSlotData.startWeek) || 1;
@@ -1701,6 +1735,9 @@ function parseAndFillData(data) {
         
         // 更新显示
         updateCoursesDisplay();
+        
+        // 更新课程时间显示（可能在AI解析过程中扩展了classTimes数组）
+        updateClassTimesDisplay();
         
         // 滚动到课程信息区域
         document.getElementById('coursesList').scrollIntoView({ behavior: 'smooth' });
