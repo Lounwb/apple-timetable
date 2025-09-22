@@ -432,13 +432,29 @@ function generateAndImportICS() {
     // 生成ICS内容
     let icsContent = generateICSHeader();
     
-    courses.forEach(course => {
-        course.timeSlots.forEach(timeSlot => {
-            icsContent += generateCourseEvent(course, timeSlot, schoolAddress, semesterStartDate, totalWeeks);
+    try {
+        courses.forEach(course => {
+            if (!course.timeSlots || course.timeSlots.length === 0) {
+                console.warn(`课程 "${course.name}" 没有时间段信息，跳过`);
+                return;
+            }
+            
+            course.timeSlots.forEach(timeSlot => {
+                try {
+                    icsContent += generateCourseEvent(course, timeSlot, schoolAddress, semesterStartDate, totalWeeks);
+                } catch (error) {
+                    console.error(`生成课程 "${course.name}" 的事件时出错:`, error);
+                    throw new Error(`课程 "${course.name}" 数据有误：${error.message}`);
+                }
+            });
         });
-    });
-    
-    icsContent += 'END:VCALENDAR';
+        
+        icsContent += 'END:VCALENDAR';
+    } catch (error) {
+        console.error('生成ICS文件时出错:', error);
+        showErrorMessage(`生成日历文件失败：${error.message}`);
+        return;
+    }
     
     // 存储ICS内容
     window.currentICSContent = icsContent;
@@ -565,9 +581,33 @@ function generateCourseEvent(course, timeSlot, schoolAddress, semesterStartDate,
     const daysToAdd = (startWeek - 1) * 7 + (dayOfWeek - 1);
     firstClassDate.setDate(startDate.getDate() + daysToAdd);
     
+    // 验证课程时间数据
+    const startClassIndex = timeSlot.startClass - 1;
+    const endClassIndex = timeSlot.endClass - 1;
+    
+    if (startClassIndex < 0 || startClassIndex >= classTimes.length) {
+        console.error(`课程 "${course.name}" 的开始节次 ${timeSlot.startClass} 超出范围，当前有 ${classTimes.length} 节课`);
+        throw new Error(`课程 "${course.name}" 的开始节次 ${timeSlot.startClass} 超出范围，请检查课程时间配置`);
+    }
+    
+    if (endClassIndex < 0 || endClassIndex >= classTimes.length) {
+        console.error(`课程 "${course.name}" 的结束节次 ${timeSlot.endClass} 超出范围，当前有 ${classTimes.length} 节课`);
+        throw new Error(`课程 "${course.name}" 的结束节次 ${timeSlot.endClass} 超出范围，请检查课程时间配置`);
+    }
+    
     // 计算课程时间
-    const startClassTime = classTimes[timeSlot.startClass - 1];
-    const endClassTime = classTimes[timeSlot.endClass - 1];
+    const startClassTime = classTimes[startClassIndex];
+    const endClassTime = classTimes[endClassIndex];
+    
+    if (!startClassTime || !startClassTime.start) {
+        console.error(`课程 "${course.name}" 的开始时间数据无效:`, startClassTime);
+        throw new Error(`课程 "${course.name}" 的开始时间数据无效，请检查课程时间配置`);
+    }
+    
+    if (!endClassTime || !endClassTime.end) {
+        console.error(`课程 "${course.name}" 的结束时间数据无效:`, endClassTime);
+        throw new Error(`课程 "${course.name}" 的结束时间数据无效，请检查课程时间配置`);
+    }
     
     const startTime = `${formatDateForICS(firstClassDate)}T${startClassTime.start.replace(':', '')}00`;
     const endTime = `${formatDateForICS(firstClassDate)}T${endClassTime.end.replace(':', '')}00`;
@@ -1607,14 +1647,39 @@ function parseAndFillData(data) {
                 
                 if (courseData.timeSlots && courseData.timeSlots.length > 0) {
                     courseData.timeSlots.forEach(timeSlotData => {
+                        // 验证和修正时间段数据
+                        let startClass = parseInt(timeSlotData.startClass) || 1;
+                        let endClass = parseInt(timeSlotData.endClass) || 2;
+                        
+                        // 确保节次在有效范围内
+                        const maxClass = classTimes.length;
+                        if (startClass < 1) startClass = 1;
+                        if (startClass > maxClass) startClass = maxClass;
+                        if (endClass < startClass) endClass = startClass;
+                        if (endClass > maxClass) endClass = maxClass;
+                        
+                        // 验证其他字段
+                        let startWeek = parseInt(timeSlotData.startWeek) || 1;
+                        let endWeek = parseInt(timeSlotData.endWeek) || 16;
+                        let dayOfWeek = parseInt(timeSlotData.dayOfWeek) || 1;
+                        
+                        // 确保周数在合理范围内
+                        if (startWeek < 1) startWeek = 1;
+                        if (endWeek < startWeek) endWeek = startWeek;
+                        if (endWeek > 30) endWeek = 30; // 限制最大周数
+                        
+                        // 确保星期在1-7范围内
+                        if (dayOfWeek < 1) dayOfWeek = 1;
+                        if (dayOfWeek > 7) dayOfWeek = 7;
+                        
                         course.timeSlots.push({
                             id: Date.now() + Math.random(),
                             location: timeSlotData.location || '',
-                            startWeek: timeSlotData.startWeek || 1,
-                            endWeek: timeSlotData.endWeek || 16,
-                            dayOfWeek: timeSlotData.dayOfWeek || 1,
-                            startClass: timeSlotData.startClass || 1,
-                            endClass: timeSlotData.endClass || 2
+                            startWeek: startWeek,
+                            endWeek: endWeek,
+                            dayOfWeek: dayOfWeek,
+                            startClass: startClass,
+                            endClass: endClass
                         });
                     });
                 } else {
